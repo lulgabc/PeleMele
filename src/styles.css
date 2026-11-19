@@ -1201,6 +1201,340 @@ ol {
 }
 
 /* -------------------------------------------------------------------------
+   Stickers
+   ------------------------------------------------------------------------- */
+
+.sticker-face {
+  --sticker-size: 54px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--sticker-size);
+  height: var(--sticker-size);
+  border: 4px solid #fffcf6;
+  border-radius: 44% 56% 48% 52% / 54% 44% 56% 46%;
+  background:
+    radial-gradient(circle at 29% 21%, rgba(255, 255, 255, 0.64), transparent 38%),
+    color-mix(in srgb, var(--kind, var(--primary)) 48%, #fff8ee);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent),
+    0 9px 16px -9px var(--shadow),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.06);
+  transform: rotate(var(--sticker-tilt, 0deg));
+  font-size: calc(var(--sticker-size) * 0.5);
+  line-height: 1;
+  transition:
+    transform 0.2s cubic-bezier(0.2, 0.8, 0.3, 1.25),
+    box-shadow 0.2s ease;
+}
+
+.sticker-face::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.sticker-face-emoji {
+  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.12));
+}
+
+.sticker-face--xs {
+  --sticker-size: 30px;
+  border-width: 2.5px;
+}
+
+.sticker-face--sm {
+  --sticker-size: 40px;
+  border-width: 3px;
+}
+
+.sticker-face--md {
+  --sticker-size: 56px;
+}
+
+.sticker-face--lg {
+  --sticker-size: 64px;
+}
+
+/* Sticker sheet on Today */
+
+.sticker-tray {
+  position: relative;
+  margin-top: 20px;
+  padding: 18px 22px 12px;
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  background:
+    linear-gradient(125deg, color-mix(in srgb, var(--primary) 5%, var(--surface)), var(--surface) 48%),
+    var(--surface);
+  overflow: hidden;
+  box-shadow:
+    0 1.5px 0 color-mix(in srgb, var(--ink) 4%, transparent),
+    0 24px 50px -44px var(--shadow);
+}
+
+.sticker-tray::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--ink) 12%, transparent) 1px, transparent 1px);
+  background-size: 14px 14px;
+  opacity: 0.23;
+  pointer-events: none;
+}
+
+.sticker-tray::after {
+  content: '';
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 120px;
+  height: 26px;
+  transform: translateX(-50%) rotate(-1.5deg);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent) 28%, var(--surface));
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.sticker-tray-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.sticker-tray-head h2 {
+  margin-top: 3px;
+  font-size: 22px;
+}
+
+.sticker-tray-hint {
+  color: var(--ink-soft);
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+.sticker-strip {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(4px, 1.2vw, 13px);
+  padding: 7px 4px 5px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.sticker-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.sticker-piece {
+  display: flex;
+  flex: 0 0 clamp(82px, 7.6vw, 108px);
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 4px 3px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  scroll-snap-align: center;
+}
+
+.sticker-tray .sticker-face--md {
+  --sticker-size: 62px;
+}
+
+.sticker-piece:hover .sticker-face {
+  transform: rotate(calc(var(--sticker-tilt, 0deg) + 5deg)) translateY(-5px) scale(1.06);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent),
+    0 16px 24px -12px var(--shadow),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.06);
+}
+
+.sticker-piece:active .sticker-face {
+  transform: rotate(calc(var(--sticker-tilt, 0deg) - 3deg)) scale(0.94);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent),
+    0 4px 8px -5px var(--shadow);
+}
+
+.sticker-piece-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  line-height: 1.2;
+}
+
+.sticker-blank-face {
+  --kind: var(--ink);
+  border: 3px dashed color-mix(in srgb, var(--ink) 26%, transparent);
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink-soft);
+  transform: rotate(-3deg);
+}
+
+.sticker-piece:hover .sticker-blank-face {
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+/* Event cards */
+
+.event-sticker {
+  display: inline-flex;
+  margin: -8px -2px 0 0;
+  flex: none;
+}
+
+.event-card .event-card-top {
+  align-items: flex-start;
+}
+
+.event-card--poster .event-sticker {
+  margin: -4px -2px 0 0;
+}
+
+.event-card--mini .event-sticker {
+  margin: -4px -1px 0 0;
+}
+
+.event-card:hover .event-sticker .sticker-face {
+  transform: rotate(calc(var(--sticker-tilt, 0deg) + 6deg)) scale(1.07);
+}
+
+.stickers-on .event-card::after {
+  opacity: 0;
+}
+
+.stickers-off .highlight-emoji {
+  border: 0;
+  border-radius: 50%;
+  transform: none;
+}
+
+.stickers-on .highlight-emoji {
+  border: 4px solid #fffcf6;
+  border-radius: 44% 56% 48% 52% / 54% 44% 56% 46%;
+  transform: rotate(-4deg);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent),
+    0 16px 28px -16px var(--shadow);
+}
+
+/* Month chips */
+
+.month-chip-emoji {
+  margin-right: 3px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* Sticker picker in the event form */
+
+.title-with-sticker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.title-with-sticker .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.sticker-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 64%, transparent);
+}
+
+.sticker-choice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.sticker-choice:hover {
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  transform: translateY(-2px);
+}
+
+.sticker-choice.is-active {
+  background: color-mix(in srgb, var(--primary) 13%, var(--surface));
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--primary) 38%, transparent);
+}
+
+.sticker-choice .sticker-face {
+  border-width: 2.5px;
+}
+
+/* Settings toggle */
+
+.sticker-mode-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 11px 14px;
+  border: 1.5px dashed color-mix(in srgb, var(--primary) 27%, var(--line));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+}
+
+.sticker-mode-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.sticker-mode-copy strong {
+  display: block;
+  font-size: 12.5px;
+}
+
+.sticker-mode-copy span {
+  display: block;
+  margin-top: 1px;
+  color: var(--ink-soft);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.sticker-mode-row .switch {
+  flex: none;
+}
+
+/* -------------------------------------------------------------------------
    Event cards
    ------------------------------------------------------------------------- */
 
@@ -3864,6 +4198,74 @@ ol {
     padding: 11px 15px;
     min-width: 0;
     font-size: 12.5px;
+  }
+
+  .sticker-tray {
+    margin-top: 14px;
+    padding: 16px 12px 8px;
+    border-radius: 24px;
+  }
+
+  .sticker-tray-head {
+    padding: 0 4px;
+    margin-bottom: 4px;
+  }
+
+  .sticker-tray-head h2 {
+    font-size: 18px;
+  }
+
+  .sticker-tray-hint {
+    display: none;
+  }
+
+  .sticker-strip {
+    gap: 1px;
+    padding: 6px 2px 4px;
+  }
+
+  .sticker-piece {
+    flex-basis: 72px;
+    padding: 4px 2px 2px;
+  }
+
+  .sticker-piece .sticker-face {
+    --sticker-size: 50px;
+  }
+  .sticker-piece-label {
+    font-size: 9.5px;
+  }
+
+  .title-with-sticker {
+    gap: 7px;
+  }
+
+  .title-with-sticker .sticker-face {
+    --sticker-size: 46px;
+  }
+
+  .sticker-picker {
+    gap: 2px;
+    padding: 6px;
+  }
+
+  .sticker-choice {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .sticker-mode-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .sticker-mode-copy {
+    flex-basis: calc(100% - 52px);
+  }
+
+  .sticker-mode-row .switch {
+    margin-left: auto;
   }
 
   .hero-stats {

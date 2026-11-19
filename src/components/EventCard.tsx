@@ -2,8 +2,10 @@ import type { CSSProperties } from 'react';
 import { Clock3, MapPin } from 'lucide-react';
 import { formatEventWhen, minutesBetween } from '../lib/dates';
 import { kindMeta, type FamilyEvent } from '../lib/types';
+import { stickerFor } from '../lib/stickers';
 import { useFamily } from '../state/FamilyContext';
 import { AvatarStack } from './Avatar';
+import { StickerFace } from './StickerFace';
 
 export type EventCardVariant = 'card' | 'poster' | 'mini';
 
@@ -29,6 +31,10 @@ export function EventCard({
   );
   const style = { '--kind': kind.color } as CSSProperties;
   const duration = event.allDay ? null : minutesBetween(event.start, event.end);
+  const stickersOn = state.stickerMode;
+  const stickerEmoji = stickerFor(event, kind.emoji);
+  const stickerSize = variant === 'poster' ? 'lg' : variant === 'mini' ? 'xs' : 'sm';
+  const tilt = (event.id.charCodeAt(event.id.length - 1) % 7) - 3;
 
   return (
     <button
@@ -40,11 +46,21 @@ export function EventCard({
     >
       <span className="event-card-top">
         <span className="event-kind-chip">
-          <span aria-hidden="true">{kind.emoji}</span>
+          {!stickersOn && <span aria-hidden="true">{kind.emoji}</span>}
           {kind.label}
         </span>
-        {variant === 'poster' && duration !== null && duration >= 180 && (
-          <span className="event-duration">{duration >= 60 ? `${(duration / 60).toFixed(duration % 60 === 0 ? 0 : 1)} 小时` : `${duration} 分钟`}</span>
+        {stickersOn ? (
+          <span className="event-sticker">
+            <StickerFace emoji={stickerEmoji} kindColor={kind.color} size={stickerSize} tilt={tilt} />
+          </span>
+        ) : (
+          variant === 'poster' &&
+          duration !== null &&
+          duration >= 180 && (
+            <span className="event-duration">
+              {duration >= 60 ? `${(duration / 60).toFixed(duration % 60 === 0 ? 0 : 1)} 小时` : `${duration} 分钟`}
+            </span>
+          )
         )}
       </span>
 

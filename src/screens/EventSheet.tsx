@@ -10,13 +10,15 @@ import {
   uid,
 } from '../lib/dates';
 import { findConflicts } from '../lib/availability';
-import { EVENT_KINDS, type EventKind, type FamilyEvent } from '../lib/types';
+import { EVENT_KINDS, kindMeta, type EventKind, type FamilyEvent } from '../lib/types';
+import { STICKER_CHOICES } from '../lib/stickers';
 import { activeMembers } from '../lib/selectors';
 import type { EventPrefill } from '../state/UIContext';
 import { useFamily } from '../state/FamilyContext';
 import { useUI } from '../state/UIContext';
 import { Avatar } from '../components/Avatar';
 import { Sheet } from '../components/Sheet';
+import { StickerFace } from '../components/StickerFace';
 
 export function EventSheet() {
   const { state, dispatch } = useFamily();
@@ -39,21 +41,23 @@ export function EventSheet() {
       size="md"
     >
       <EventForm
-        key={existing?.id ?? `new-${eventSheet.prefill?.date?.toISOString() ?? 'now'}-${eventSheet.prefill?.startTime ?? ''}`}
+        key={existing?.id ?? `new-${eventSheet.prefill?.date?.toISOString() ?? 'now'}-${eventSheet.prefill?.startTime ?? ''}-${eventSheet.prefill?.sticker ?? ''}`}
         existing={existing ?? null}
         prefill={eventSheet.prefill}
         members={members}
         events={state.events}
+        stickersOn={state.stickerMode}
         onClose={closeEventSheet}
         onSave={(event) => {
           dispatch({ type: 'event/upsert', event });
           closeEventSheet();
-          toast(existing ? '活动已更新' : '安排好了，记得告诉家人');
+          const sticker = event.sticker?.trim();
+          toast(existing ? `${sticker ? `${sticker} ` : ''}贴纸已更新` : `${sticker ? `${sticker} ` : ''}贴好了，记得告诉家人`);
         }}
         onDelete={(event) => {
           dispatch({ type: 'event/delete', id: event.id });
           closeEventSheet();
-          toast('活动已取消', 'info');
+          toast(`${event.sticker?.trim() || '✨'} 已从日历上撕下`, 'info');
         }}
       />
     </Sheet>
@@ -65,6 +69,7 @@ function EventForm({
   prefill,
   members,
   events,
+  stickersOn,
   onClose,
   onSave,
   onDelete,
@@ -73,6 +78,7 @@ function EventForm({
   prefill?: EventPrefill;
   members: ReturnType<typeof activeMembers>;
   events: FamilyEvent[];
+  stickersOn: boolean;
   onClose: () => void;
   onSave: (event: FamilyEvent) => void;
   onDelete: (event: FamilyEvent) => void;
@@ -97,6 +103,10 @@ function EventForm({
       : initialEnd;
 
   const [kind, setKind] = useState<EventKind>((existing?.kind ?? prefill?.kind ?? 'outing') as EventKind);
+  const [sticker, setSticker] = useState(
+    existing?.sticker ?? prefill?.sticker ?? kindMeta(existing?.kind ?? prefill?.kind ?? 'outing').emoji,
+  );
+  const [stickerTouched, setStickerTouched] = useState(Boolean(existing?.sticker || prefill?.sticker));
   const [title, setTitle] = useState(existing?.title ?? prefill?.title ?? '');
   const [allDay, setAllDay] = useState(defaultAllDay);
   const [startDate, setStartDate] = useState(
@@ -159,6 +169,11 @@ function EventForm({
     });
   };
 
+  const selectKind = (next: EventKind) => {
+    setKind(next);
+    if (!stickerTouched) setSticker(kindMeta(next).emoji);
+  };
+
   const save = () => {
     if (!canSave) return;
     const stamp = new Date().toISOString();
@@ -166,6 +181,7 @@ function EventForm({
       id: existing?.id ?? uid('ev'),
       title: title.trim(),
       kind,
+      sticker: sticker.trim() || undefined,
       start: iso(start),
       end: iso(end),
       allDay,
@@ -188,7 +204,7 @@ function EventForm({
               type="button"
               className={`kind-option ${kind === item.id ? 'is-active' : ''}`}
               style={{ '--kind': item.color } as CSSProperties}
-              onClick={() => setKind(item.id)}
+              onClick={() => selectKind(item.id)}
               aria-pressed={kind === item.id}
             >
               <span className="kind-emoji" aria-hidden="true">{item.emoji}</span>
@@ -200,15 +216,49 @@ function EventForm({
 
       <label className="field">
         <span className="field-label">标题</span>
-        <input
-          className="input input--title"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          placeholder="比如：溪边露营 / 外婆生日"
-          maxLength={48}
-          data-autofocus
-        />
+        <span className="title-with-sticker">
+          {stickersOn && <StickerFace emoji={sticker} kindColor={kindMeta(kind).color} size="md" tilt={-4} />}
+          <input
+            className="input input--title"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="比如：溪边露营 / 外婆生日"
+            maxLength={48}
+            data-autofocus
+          />
+        </span>
       </label>
+
+      {stickersOn && (
+        <div className="field">
+          <div className="field-row">
+            <span className="field-label">贴纸</span>
+            <span className="field-hint">点一张，贴在日历上</span>
+          </div>
+          <div className="sticker-picker" role="group" aria-label="选择贴纸">
+            {STICKER_CHOICES.map((emoji, index) => (
+              <button
+                key={emoji}
+                type="button"
+                className={`sticker-choice ${sticker === emoji ? 'is-active' : ''}`}
+                onClick={() => {
+                  setSticker(emoji);
+                  setStickerTouched(true);
+                }}
+                aria-pressed={sticker === emoji}
+                aria-label={`选择贴纸 ${emoji}`}
+              >
+                <StickerFace
+                  emoji={emoji}
+                  kindColor={kindMeta(kind).color}
+                  size="xs"
+                  tilt={(index % 5) - 2}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="field">
         <div className="field-row">
@@ -363,7 +413,7 @@ function EventForm({
             </span>
           ) : (
             <button type="button" className="text-button text-button--danger" onClick={() => setConfirmDelete(true)}>
-              <Trash2 size={15} strokeWidth={2.3} /> 删除活动
+              <Trash2 size={15} strokeWidth={2.3} /> 从日历上撕下
             </button>
           )
         ) : (

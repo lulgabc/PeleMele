@@ -36,6 +36,7 @@ import { useUI } from '../state/UIContext';
 import { Avatar } from '../components/Avatar';
 import { BrandLockup } from '../components/Brand';
 import { MemberEditor } from '../components/MemberEditor';
+import { StickerFace } from '../components/StickerFace';
 import { SyncSettings } from '../components/SyncSettings';
 
 export function SettingsScreen() {
@@ -237,6 +238,25 @@ export function SettingsScreen() {
                 </button>
               );
             })}
+          </div>
+
+          <div className="sticker-mode-row">
+            <StickerFace emoji="🏕️" kindColor="#2FA8A0" size="sm" tilt={-5} />
+            <div className="sticker-mode-copy">
+              <strong>贴纸玩心</strong>
+              <span>活动变成模切贴纸，今天页出现「贴纸抽屉」。关掉就回到干净视图。</span>
+            </div>
+            <button
+              type="button"
+              className={`switch ${state.stickerMode ? 'is-on' : ''}`}
+              role="switch"
+              aria-checked={state.stickerMode}
+              aria-label="贴纸玩心"
+              onClick={() => dispatch({ type: 'settings/stickers', value: !state.stickerMode })}
+            >
+              <span className="switch-knob" aria-hidden="true" />
+              {state.stickerMode ? '已开启' : '已关闭'}
+            </button>
           </div>
 
           <div className={`custom-theme ${state.skin === 'custom' ? 'is-active' : ''}`}>

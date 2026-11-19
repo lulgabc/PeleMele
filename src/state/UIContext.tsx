@@ -15,6 +15,7 @@ export type View = 'today' | 'week' | 'month' | 'together' | 'settings';
 export interface EventPrefill {
   title?: string;
   kind?: EventKind;
+  sticker?: string;
   date?: Date;
   startTime?: string;
   endTime?: string;

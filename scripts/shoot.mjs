@@ -33,6 +33,11 @@ for (const view of ['today', 'week', 'month', 'together', 'settings']) {
   await shot(desktop.page, `desktop-${view}`, { fullPage: view !== 'today' });
 }
 await desktop.page.goto(`${base}/#/today`, { waitUntil: 'networkidle' });
+await desktop.page.locator('.sticker-tray').screenshot({
+  path: `${outDir}sticker-tray-desktop.jpg`,
+  type: 'jpeg',
+  quality: 90,
+});
 await desktop.page.getByRole('button', { name: '安排一件事' }).click();
 await shot(desktop.page, 'desktop-event-form');
 await desktop.context.close();
@@ -43,6 +48,13 @@ for (const view of ['today', 'week', 'month', 'together']) {
   await shot(mobile.page, `mobile-${view}`);
 }
 await mobile.page.goto(`${base}/#/today`, { waitUntil: 'networkidle' });
+await mobile.page.locator('.sticker-tray').scrollIntoViewIfNeeded();
+await mobile.page.locator('.sticker-tray').evaluate((element) => {
+  const rect = element.getBoundingClientRect();
+  window.scrollBy(0, rect.top - 170);
+});
+await shot(mobile.page, 'mobile-stickers');
+await mobile.page.locator('.sticker-tray').screenshot({ path: `${outDir}sticker-tray.jpg`, type: 'jpeg', quality: 90 });
 await mobile.page.getByRole('button', { name: '安排一件事' }).click();
 await shot(mobile.page, 'mobile-event-form');
 await mobile.page.keyboard.press('Escape');

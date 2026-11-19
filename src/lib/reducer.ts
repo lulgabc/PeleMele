@@ -7,6 +7,7 @@ export type FamilyAction =
   | { type: 'member/delete'; id: string }
   | { type: 'settings/skin'; skin: string }
   | { type: 'settings/custom-theme'; theme: CustomTheme | null }
+  | { type: 'settings/stickers'; value: boolean }
   | { type: 'settings/family-name'; name: string }
   | { type: 'settings/week-start'; value: 0 | 1 }
   | { type: 'settings/google'; patch: Partial<GoogleConfig> }
@@ -142,6 +143,8 @@ export function familyReducer(state: AppState, action: FamilyAction): AppState {
       return prefsTouch(state, { skin: action.skin });
     case 'settings/custom-theme':
       return prefsTouch(state, { customTheme: action.theme, skin: action.theme ? 'custom' : state.skin });
+    case 'settings/stickers':
+      return prefsTouch(state, { stickerMode: action.value });
     case 'settings/family-name':
       return prefsTouch(state, { familyName: action.name.trim() || state.familyName, isSample: false });
     case 'settings/week-start':

@@ -8,13 +8,15 @@ import { TogetherScreen } from './screens/Together';
 import { TodayScreen } from './screens/Today';
 import { WeekScreen } from './screens/Week';
 import { SyncBridge } from './state/SyncBridge';
+import { useFamily } from './state/FamilyContext';
 import { useUI } from './state/UIContext';
 
 export default function App() {
   const { view } = useUI();
+  const { state } = useFamily();
 
   return (
-    <div className={`app app--${view}`}>
+    <div className={`app app--${view} ${state.stickerMode ? 'stickers-on' : 'stickers-off'}`}>
       {view !== 'settings' && <TopBar />}
       <main className="app-main">
         {view === 'today' && <TodayScreen />}

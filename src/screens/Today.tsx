@@ -29,7 +29,9 @@ import { useUI } from '../state/UIContext';
 import { AvatarStack } from '../components/Avatar';
 import { Doodle } from '../components/Brand';
 import { EmptyState, SectionHead } from '../components/Bits';
+import { StickerTray } from '../components/StickerTray';
 import { Timeline } from '../components/Timeline';
+import { stickerFor } from '../lib/stickers';
 
 export function TodayScreen() {
   const { state, dispatch } = useFamily();
@@ -121,7 +123,7 @@ export function TodayScreen() {
                 style={{ background: kindMeta(highlight.kind).color }}
                 aria-hidden="true"
               >
-                {kindMeta(highlight.kind).emoji}
+                {state.stickerMode ? stickerFor(highlight, kindMeta(highlight.kind).emoji) : kindMeta(highlight.kind).emoji}
               </span>
               <span className="highlight-title">{highlight.title}</span>
               <span className="highlight-when">{formatEventWhen(highlight, now)}</span>
@@ -149,6 +151,8 @@ export function TodayScreen() {
           <Doodle variant="squiggle" className="hero-squiggle" />
         </div>
       </section>
+
+      {state.stickerMode && <StickerTray />}
 
       <div className="today-grid">
         <section className="panel panel--timeline">

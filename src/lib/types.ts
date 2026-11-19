@@ -17,6 +17,8 @@ export interface FamilyEvent {
   id: string;
   title: string;
   kind: EventKind;
+  /** Die-cut sticker shown on cards. Falls back to the kind emoji. */
+  sticker?: string;
   /** Local ISO datetime. All-day events start at 00:00 and end at 00:00 of the day AFTER the last day. */
   start: string;
   end: string;
@@ -72,6 +74,8 @@ export interface AppState {
   google: GoogleConfig;
   skin: string;
   customTheme: CustomTheme | null;
+  /** Die-cut stickers, the sticker tray, and sticker-first cards. */
+  stickerMode: boolean;
   /** 0 = Sunday, 1 = Monday. PeleMele is designed around Monday-first weeks. */
   weekStartsOn: 0 | 1;
   onboardingSeen: boolean;

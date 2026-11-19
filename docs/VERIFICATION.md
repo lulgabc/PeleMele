@@ -11,14 +11,14 @@ $ npx tsc --noEmit
 
 $ npm test
 Test Files  7 passed (7)
-     Tests  36 passed (36)
+     Tests  37 passed (37)
   Duration  ~3s
 
 $ npm run build
 ✓ 2459 modules transformed
 dist/index.html                        1.08 kB
-dist/assets/index-*.css               64.80 kB │ gzip: 12.94 kB
-dist/assets/index-*.js               363.41 kB │ gzip: 113.32 kB
+dist/assets/index-*.css               71.10 kB │ gzip: 14.08 kB
+dist/assets/index-*.js               368.39 kB │ gzip: 114.78 kB
 ✓ built
 ```
 
@@ -30,7 +30,8 @@ dist/assets/index-*.js               363.41 kB │ gzip: 113.32 kB
 - 同步合并（每成员 Google busy 取最新）
 - 日期（周一起始、月纸带、全天跨日、off-by-one）
 - 备份导入导出
-- 组件：首屏、导航、快速添加、月视图日抽屉
+- 组件：首屏、导航、快速添加、月视图日抽屉、贴纸抽屉预填并持久化所选贴纸
+- 贴纸开关：Playwright 验证关闭后 tray/event stickers 数量为 0，打开后恢复
 - Google freeBusy：请求头、时间范围、区间映射、401/无权限错误
 - **同步服务端到端**：创建房间 → 推送修改 revision+1 → 第二台设备拉取并合并
 
@@ -40,7 +41,8 @@ Playwright（系统 Chrome，无头）遍历：
 
 - Web 桌面 1440×900：今天 / 节奏 / 花园 / 合拍 / 设置 / 活动抽屉
 - Web 移动 390×844：同上下 + 青柠 / 可可夜皮肤
-- 输出：`docs/screenshots/`
+- 贴纸：`sticker-tray-desktop.jpg`、`sticker-tray.jpg`、`mobile-stickers.jpg`
+- 输出：`docs/screenshots/`（18 张）
 - **Console / page errors：0**
 
 ## PWA

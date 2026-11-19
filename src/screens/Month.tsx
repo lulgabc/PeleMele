@@ -127,6 +127,11 @@ export function MonthScreen() {
                             onClick={() => openEdit(event.id)}
                             title={event.title}
                           >
+                            {state.stickerMode && (
+                              <span className="month-chip-emoji" aria-hidden="true">
+                                {event.sticker ?? kindMeta(event.kind).emoji}
+                              </span>
+                            )}
                             {event.title}
                           </button>
                         ))}

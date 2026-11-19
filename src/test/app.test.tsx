@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
 import { createSeedState } from '../lib/seed';
@@ -44,9 +44,25 @@ describe('PeleMele app', () => {
     renderApp();
     await user.click(screen.getByRole('button', { name: '添加活动' }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    await user.type(screen.getByLabelText('标题'), '公园放风筝');
+    await user.type(screen.getByLabelText(/标题/), '公园放风筝');
     await user.click(screen.getByRole('button', { name: /放进日历/ }));
-    expect(await screen.findByText('安排好了，记得告诉家人')).toBeInTheDocument();
+    expect(await screen.findByText(/贴好了/)).toBeInTheDocument();
+  });
+
+  it('opens a pre-filled activity from the sticker tray', async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await user.click(screen.getByRole('button', { name: '贴一张露营贴纸' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByLabelText(/标题/)).toHaveValue('周末露营');
+    expect(screen.getByRole('button', { name: `选择贴纸 🏕️` })).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(screen.getByRole('button', { name: /放进日历/ }));
+    await waitFor(() => {
+      const saved = JSON.parse(window.localStorage.getItem('pelemele.state.v1') ?? '{}');
+      const created = saved.events?.find((event: { title: string }) => event.title === '周末露营');
+      expect(created?.sticker).toBe('🏕️');
+    });
   });
 
   it('opens a day story from the month view', async () => {

@@ -71,11 +71,12 @@ export function createSeedState(now = new Date()): AppState {
     start: Date,
     end: Date,
     memberIds: string[],
-    options: Partial<Pick<FamilyEvent, 'location' | 'notes' | 'allDay'>> = {},
+    options: Partial<Pick<FamilyEvent, 'location' | 'notes' | 'allDay' | 'sticker'>> = {},
   ): FamilyEvent => ({
     id: uid('ev'),
     title,
     kind,
+    sticker: options.sticker,
     start: iso(start),
     end: iso(end),
     allDay: options.allDay ?? false,
@@ -93,51 +94,63 @@ export function createSeedState(now = new Date()): AppState {
   const events: FamilyEvent[] = [
     event('电影夜 · 客厅', 'routine', at(today, 19, 30), at(today, 21, 15), everyone, {
       notes: '爆米花 + 豆豆选的动画片。',
+      sticker: '🍿',
     }),
     event('豆豆 · 游泳课', 'routine', at(addDays(today, 1), 16, 30), at(addDays(today, 1), 17, 30), [mom.id, dou.id], {
       location: '社区泳池',
+      sticker: '🏊',
     }),
     {
       ...event('溪边露营', 'trip', new Date(campingRange.start), new Date(campingRange.end), everyone, {
         allDay: true,
         location: '青岚溪谷',
         notes: '带帐篷、防蚊液和豆豆的望远镜。',
+        sticker: '🏕️',
       }),
     },
     event('外婆生日午餐', 'birthday', at(sunday, 11, 30), at(sunday, 14, 30), everyone, {
       location: '外婆家',
       notes: '订一个少糖的草莓蛋糕。',
+      sticker: '🎂',
     }),
     event('果果 · 牙医复查', 'routine', at(nextWeekday(now, 2), 10), at(nextWeekday(now, 2), 10, 45), [mom.id, guo.id], {
       location: '微笑牙科',
+      sticker: '🦷',
     }),
     event('朋友家晚餐', 'gather', at(nextWeekday(now, 4), 18, 30), at(nextWeekday(now, 4), 21), everyone, {
       location: '阿林家',
       notes: '带一瓶气泡水和果果的备用衣服。',
+      sticker: '🍜',
     }),
     event('豆豆 · 足球友谊赛', 'outing', at(addDays(saturday, 7), 9, 30), at(addDays(saturday, 7), 11), [dad.id, dou.id], {
       location: '滨河球场',
+      sticker: '⚽',
     }),
     event('同学生日会', 'birthday', at(addDays(saturday, 7), 15), at(addDays(saturday, 7), 17, 30), [mom.id, dou.id], {
       location: '小鹿亲子空间',
+      sticker: '🎈',
     }),
     event('植物园野餐', 'outing', at(addDays(sunday, 7), 10), at(addDays(sunday, 7), 13), everyone, {
       location: '南门大草坪',
       notes: '带野餐垫和泡泡机。',
+      sticker: '🧺',
     }),
     {
       ...event('海边小长假', 'trip', new Date(beachRange.start), new Date(beachRange.end), everyone, {
         allDay: true,
         location: '阿那亚',
         notes: '订两晚民宿，看日出。',
+        sticker: '🌊',
       }),
     },
     event('妈妈生日', 'birthday', at(addDays(today, 9), 18, 30), at(addDays(today, 9), 21), everyone, {
       location: '家里',
       notes: '果果负责插蜡烛，豆豆负责藏礼物。',
+      sticker: '💐',
     }),
     event('豆豆 · 家长会', 'routine', at(nextWeekday(now, 1), 18), at(nextWeekday(now, 1), 19, 30), [dad.id, mom.id], {
       location: '豆豆学校',
+      sticker: '📚',
     }),
   ];
 
@@ -160,6 +173,7 @@ export function createSeedState(now = new Date()): AppState {
     google,
     skin: 'peach',
     customTheme: null,
+    stickerMode: true,
     weekStartsOn: 1,
     onboardingSeen: false,
     isSample: true,

@@ -13,6 +13,7 @@ Web / iOS / Android 共用一套代码；不做 Google Calendar 式的表格，�
 - **花园**：一个月由 4–6 条「周纸带」组成，日期是纸带上的扣子，而不是格子。
 - **合拍**：把父母（或任意成员）的忙碌叠在一起，找出共同空闲，并给出 3 个值得约的时段。
 - **皮肤**：蜜桃汽水 / 青柠野餐 / 泡泡糖 / 海盐日落 / 可可夜，外加三色自定义配色。
+- **贴纸玩心**：每个活动可换一张模切贴纸，今天页有「贴纸抽屉」，点一张就能带着贴纸开新活动；设置里可一键关闭。
 - **Google 日历**：用最小权限 `calendar.freebusy` 只读取忙碌/空闲，不读取标题、地点和参与者。
 - **家庭同步**：可选的零依赖自部署 Node 服务，让多台设备共享同一份日历。
 
@@ -25,7 +26,7 @@ Web / iOS / Android 共用一套代码；不做 Google Calendar 式的表格，�
 ```bash
 npm install
 npm run dev          # http://localhost:5173
-npm test             # 36 个单元/组件测试
+npm test             # 37 个单元/组件测试
 npm run build        # 产物在 dist/
 npm run preview      # 预览生产构建
 ```
@@ -113,6 +114,7 @@ PUT /api/rooms/:room        x-family-key  { baseRevision, state }
 | ![月](docs/screenshots/desktop-month.jpg) | ![设置](docs/screenshots/desktop-settings.jpg) |
 | ![手机今天](docs/screenshots/mobile-today.jpg) | ![手机月](docs/screenshots/mobile-month.jpg) |
 | ![iOS](docs/screenshots/ios-today.jpg) | ![可可夜](docs/screenshots/mobile-today-cocoa.jpg) |
+| ![贴纸抽屉](docs/screenshots/sticker-tray-desktop.jpg) | ![贴纸模式](docs/screenshots/mobile-stickers.jpg) |
 
 完整截图在 `docs/screenshots/`，Web 为 390×844（2x）与 1440×900（2x）；iOS 为 iPhone 17 模拟器。
 
@@ -139,7 +141,7 @@ src/
   components/         UI 组件（布局、卡片、时间线、抽屉…）
   screens/            今天 / 周 / 月 / 合拍 / 设置 / 活动表单
   state/              FamilyContext、UIContext、SyncBridge
-  test/               36 个测试（含同步服务端到端）
+  test/               37 个测试（含同步服务端到端）
 server/               自部署家庭同步服务
 ios/ android/         Capacitor 原生工程
 docs/                 研究、设计规范、验收截图
@@ -157,7 +159,7 @@ docs/                 研究、设计规范、验收截图
 ## 测试与验收
 
 ```bash
-npm test        # 7 个文件，36 个测试通过
+npm test        # 7 个文件，37 个测试通过
 npm run build   # TypeScript 严格检查 + 生产构建通过
 ```
 
