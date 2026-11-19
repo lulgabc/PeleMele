@@ -1,11 +1,52 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fetchGoogleBusy } from '../lib/google';
+import { fetchGoogleAccount, fetchGoogleBusy, GOOGLE_SCOPES } from '../lib/google';
 
 const start = new Date('2026-11-20T00:00:00.000Z');
 const end = new Date('2026-11-27T00:00:00.000Z');
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+describe('Gmail account login', () => {
+  it('asks for the Gmail profile and calendar free/busy scopes', () => {
+    expect(GOOGLE_SCOPES).toContain('openid');
+    expect(GOOGLE_SCOPES).toContain('email');
+    expect(GOOGLE_SCOPES).toContain('profile');
+    expect(GOOGLE_SCOPES).toContain('https://www.googleapis.com/auth/calendar.freebusy');
+  });
+
+  it('reads the signed-in Gmail identity from userinfo', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          email: 'mom@gmail.com',
+          name: '小满',
+          picture: 'https://lh3.googleusercontent.com/avatar',
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const account = await fetchGoogleAccount('token-abc');
+    expect(account).toEqual({
+      email: 'mom@gmail.com',
+      name: '小满',
+      picture: 'https://lh3.googleusercontent.com/avatar',
+    });
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('https://www.googleapis.com/oauth2/v3/userinfo');
+    expect((init.headers as Record<string, string>).Authorization).toBe('Bearer token-abc');
+  });
+
+  it('rejects an account response without an email', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ name: 'No Email' }), { status: 200 })),
+    );
+    await expect(fetchGoogleAccount('token')).rejects.toThrow('没有返回邮箱');
+  });
 });
 
 describe('Google free/busy', () => {

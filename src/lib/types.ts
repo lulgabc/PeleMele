@@ -51,7 +51,10 @@ export interface GoogleConfig {
   clientId: string;
   /** Member whose Google account was last authorized on this device. */
   connectedMemberId: string | null;
+  /** Last signed-in Gmail account (display only). */
   account: string | null;
+  accountName: string | null;
+  accountPicture: string | null;
   /** memberId -> Google calendar id (usually "primary"). */
   calendars: Record<string, string>;
   busy: BusyBlock[];

@@ -1,6 +1,19 @@
 import type { BusyBlock } from './types';
 
-export const GOOGLE_SCOPE = 'https://www.googleapis.com/auth/calendar.freebusy';
+export const GOOGLE_SCOPES =
+  'openid email profile https://www.googleapis.com/auth/calendar.freebusy';
+export const DEFAULT_GOOGLE_CLIENT_ID = ((import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ?? '').trim();
+
+export function resolveGoogleClientId(configured: string): string {
+  return configured.trim() || DEFAULT_GOOGLE_CLIENT_ID;
+}
+
+export interface GoogleAccountInfo {
+  email: string;
+  name: string;
+  picture: string;
+}
+
 const TOKEN_KEY = 'pelemele.google.token.v1';
 
 interface GisTokenResponse {
@@ -130,9 +143,17 @@ export function clearGoogleToken(): void {
   }
 }
 
-export async function requestGoogleToken(clientId: string, forceConsent = false): Promise<GoogleToken> {
+export interface RequestGoogleTokenOptions {
+  /** Let the user pick another Gmail account (needed when two parents share a device). */
+  selectAccount?: boolean;
+}
+
+export async function requestGoogleToken(
+  clientId: string,
+  options: RequestGoogleTokenOptions = {},
+): Promise<GoogleToken> {
   if (!clientId.trim()) throw new Error('请先填写 Google OAuth Client ID');
-  await loadGis();
+  if (!window.google?.accounts?.oauth2) await loadGis();
   const oauth2 = window.google?.accounts?.oauth2;
   if (!oauth2) throw new Error('Google 登录不可用');
 
@@ -140,7 +161,7 @@ export async function requestGoogleToken(clientId: string, forceConsent = false)
     let settled = false;
     const client = oauth2.initTokenClient({
       client_id: clientId.trim(),
-      scope: GOOGLE_SCOPE,
+      scope: GOOGLE_SCOPES,
       callback: () => undefined,
       error_callback: (error) => {
         if (settled) return;
@@ -166,8 +187,37 @@ export async function requestGoogleToken(clientId: string, forceConsent = false)
       resolve(storeToken(response.access_token, Number(response.expires_in ?? 3600), response.scope));
     };
 
-    client.requestAccessToken({ prompt: forceConsent || !getValidToken() ? 'consent' : '' });
+    client.requestAccessToken({
+      prompt: options.selectAccount ? 'select_account' : 'consent',
+    });
   });
+}
+
+export async function fetchGoogleAccount(accessToken: string): Promise<GoogleAccountInfo> {
+  let response: Response;
+  try {
+    response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        accept: 'application/json',
+      },
+    });
+  } catch {
+    throw new Error('无法读取 Google 账户信息，请检查网络');
+  }
+  if (response.status === 401) throw new Error('Google 登录已过期，请重新登录');
+  if (!response.ok) throw new Error(`Google 账户信息读取失败（${response.status}）`);
+  const payload = (await response.json()) as {
+    email?: string;
+    name?: string;
+    picture?: string;
+  };
+  if (!payload.email) throw new Error('Google 账户没有返回邮箱');
+  return {
+    email: payload.email,
+    name: payload.name ?? '',
+    picture: payload.picture ?? '',
+  };
 }
 
 export async function revokeGoogleToken(): Promise<void> {

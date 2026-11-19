@@ -11,7 +11,7 @@ export type FamilyAction =
   | { type: 'settings/family-name'; name: string }
   | { type: 'settings/week-start'; value: 0 | 1 }
   | { type: 'settings/google'; patch: Partial<GoogleConfig> }
-  | { type: 'google/busy'; memberId: string; blocks: BusyBlock[]; rangeStart: string; rangeEnd: string; account?: string | null }
+  | { type: 'google/busy'; memberId: string; blocks: BusyBlock[]; rangeStart: string; rangeEnd: string; account?: string | null; accountName?: string | null; accountPicture?: string | null }
   | { type: 'onboarding/seen' }
   | { type: 'state/replace'; state: AppState }
   | { type: 'state/merge'; state: AppState };
@@ -62,6 +62,8 @@ function mergeGoogle(local: GoogleConfig, remote: GoogleConfig, preferRemote: bo
     // OAuth state is per-device; never inherit a token-backed connection from another device.
     connectedMemberId: local.connectedMemberId,
     account: local.account,
+    accountName: local.accountName,
+    accountPicture: local.accountPicture,
     busy,
     busyMeta,
     lastSyncAt:
@@ -169,6 +171,8 @@ export function familyReducer(state: AppState, action: FamilyAction): AppState {
           },
           connectedMemberId: action.memberId,
           account: action.account ?? state.google.account,
+          accountName: action.accountName ?? state.google.accountName,
+          accountPicture: action.accountPicture ?? state.google.accountPicture,
           lastSyncAt: stamp,
           demoBusy: false,
         },

@@ -61,13 +61,14 @@
 
 ---
 
-## 3. Google 日历：只读、只取忙碌，不碰标题
+## 3. Gmail 登录 + Google 日历：只读、只取忙碌，不碰标题
 
-- 权限：`https://www.googleapis.com/auth/calendar.freebusy`（最小权限；不需要读取事件内容）。
+- 登录：Google Identity Services token 模型 + OIDC `openid email profile`，读取 userinfo 显示 Gmail 账户（邮箱/姓名/头像）。
+- 日历权限：`https://www.googleapis.com/auth/calendar.freebusy`（最小权限；不需要读取事件内容）。
 - 接口：`POST https://www.googleapis.com/calendar/v3/freeBusy`，一次请求可查询多本日历（[官方参考](https://developers.google.com/workspace/calendar/api/v3/reference/freebusy/query)）。
-- 流程（Web）：用户填入自己的 OAuth Client ID → GIS `initTokenClient` 弹窗授权 → 拿到 1 小时 access token → 查询未来 21 天 → 只把 `busy: [{start,end}]` 写入本地/家庭同步数据。
+- 流程（Web）：应用配置 OAuth Web Client ID → 用户点「使用 Google 账户登录」并选择自己的 Gmail → GIS `initTokenClient` 弹窗授权 → userinfo 取得账户资料 → 查询未来 21 天 freeBusy → 只把 `busy: [{start,end}]` 写入本地/家庭同步数据。
 - Token 只放 `sessionStorage`，不落盘、不上传；不上传事件标题、地点、参与者。
-- 每位家长用自己的账号、自己的设备授权；busy 以成员为粒度合并，因此“爸爸在手机 A 授权、妈妈在手机 B 授权”后，两端都能看到双方空档。
+- 每位家长选择自己的成员身份、用自己的 Gmail 授权；同一台设备可切换账户，busy 以成员为粒度合并。
 - 公开上架时 Google 敏感权限需要验证；自用/测试模式把家人加入 Test users 即可。
 - 未配置时提供**明确标注的示例忙碌数据**，让“合拍”体验可被立即看到；一键关闭。
 

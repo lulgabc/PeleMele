@@ -14,7 +14,7 @@ Web / iOS / Android 共用一套代码；不做 Google Calendar 式的表格，�
 - **合拍**：把父母（或任意成员）的忙碌叠在一起，找出共同空闲，并给出 3 个值得约的时段。
 - **皮肤**：蜜桃汽水 / 青柠野餐 / 泡泡糖 / 海盐日落 / 可可夜，外加三色自定义配色。
 - **贴纸玩心**：每个活动可换一张模切贴纸，表单里可以挑选；设置里可一键关闭，不占独立版块。
-- **Google 日历**：用最小权限 `calendar.freebusy` 只读取忙碌/空闲，不读取标题、地点和参与者。
+- **Gmail 登录**：用家长自己的 Google 账户登录，显示邮箱/头像；只读取 `calendar.freebusy` 忙碌/空闲，不读取标题、地点和参与者。
 - **家庭同步**：可选的零依赖自部署 Node 服务，让多台设备共享同一份日历。
 
 ![今天](docs/screenshots/desktop-today.jpg)
@@ -26,7 +26,7 @@ Web / iOS / Android 共用一套代码；不做 Google Calendar 式的表格，�
 ```bash
 npm install
 npm run dev          # http://localhost:5173
-npm test             # 40 个单元/组件测试
+npm test             # 43 个单元/组件测试
 npm run build        # 产物在 dist/
 npm run preview      # 预览生产构建
 ```
@@ -69,20 +69,40 @@ npm run cap:android
 
 > 原生壳内的 Google OAuth 受 WebView 限制。当前建议在 Web/PWA 上授权 Google；忙碌区间会通过「家庭同步」到达原生设备。详细取舍见 `docs/RESEARCH.md`。
 
-## 连接 Google 日历
+## Gmail 登录与 Google 日历同步
+
+PeleMele 现在使用 **Gmail 账户登录**：家长用自己的 Google 账号登录，应用显示账户姓名/邮箱/头像，再读取该账号日历的忙碌区间。
+
+### 一次性配置（应用所有者）
 
 1. 在 [Google Cloud Console](https://console.cloud.google.com/apis/credentials) 新建项目并启用 **Google Calendar API**。
 2. 配置 OAuth 同意屏幕（External），把家人加进 **Test users**。
 3. 创建 **OAuth Client ID → Web application**。
 4. Authorized JavaScript origins 添加：
    - `http://localhost:5173`
-   - 你的部署域名（如 `https://pelemele.example.com`）
-5. 打开 PeleMele → 设置 → Google 日历，粘贴 Client ID，选择家长，点「连接并同步 21 天」。
+   - `https://lulgabc.github.io`（你的 GitHub Pages 域名）
+5. 配置 Client ID，三种方式任选：
+   - **GitHub Pages**：仓库 Settings → Secrets and variables → Actions → **Variables**，新增 `GOOGLE_CLIENT_ID`，重新运行 Pages 工作流；
+   - **本地**：在 `.env.local` 写 `VITE_GOOGLE_CLIENT_ID=...`；
+   - **应用内**：设置 → Google 日历 → 「配置 Google 登录 / OAuth Client ID」直接粘贴（只保存在本机）。
 
-权限只申请 `https://www.googleapis.com/auth/calendar.freebusy`。
-Access token 只存 `sessionStorage`，关闭标签页即失效；不会进入备份或家庭同步。
+![Google 账户登录状态](docs/screenshots/google-account.jpg)
+
+### 每位家长怎么登录
+
+1. 设置 → Google 日历，先在「同步到哪位家长」选择自己。
+2. 点 **使用 Google 账户登录**，在 Google 弹出页选择自己的 Gmail，允许账户资料和 `calendar.freebusy`。
+3. 登录成功后显示邮箱、头像、同步的日历 ID 和最近同步时间；默认同步未来 21 天。
+4. 另一位家长在同一台设备上切换成员后重复登录即可；各自登录自己的 Gmail。
+
+权限只申请：
+- `openid email profile`：显示登录的是哪个 Gmail 账户；
+- `https://www.googleapis.com/auth/calendar.freebusy`：只读取忙碌/空闲。
+
+Access token 只存 `sessionStorage`，关闭标签页即失效；不会进入备份或家庭同步。Google 忙碌区间会随家庭同步；账户姓名/邮箱/头像仅用于显示登录状态，不会包含 access token。
 
 > 没有 Client ID 也能完整体验「合拍」：默认开启的示例忙碌数据会在本地生成，且 UI 明确标注「示例」，可随时关闭。
+> 真实的 Gmail 登录需要你自己创建上面的 OAuth Client ID；这是 Google 侧的应用注册，无法由前端代码代替。
 
 ## 家庭同步（可选，自部署）
 
@@ -129,6 +149,7 @@ PUT /api/rooms/:room        x-family-key  { baseRevision, state }
 ## 目录
 
 ```
+.env.example          # VITE_GOOGLE_CLIENT_ID
 src/
   lib/
     availability.ts   区间合并/差集/交集、共同空闲、冲突检测（纯函数）
@@ -140,7 +161,7 @@ src/
   components/         UI 组件（布局、卡片、时间线、抽屉…）
   screens/            今天 / 周 / 月 / 合拍 / 设置 / 活动表单
   state/              FamilyContext、UIContext、SyncBridge
-  test/               40 个测试（含同步服务端到端）
+  test/               43 个测试（含同步服务端到端）
 server/               自部署家庭同步服务
 ios/ android/         Capacitor 原生工程
 docs/                 研究、设计规范、验收截图
@@ -158,7 +179,7 @@ docs/                 研究、设计规范、验收截图
 ## 测试与验收
 
 ```bash
-npm test        # 8 个文件，40 个测试通过
+npm test        # 8 个文件，43 个测试通过
 npm run build   # TypeScript 严格检查 + 生产构建通过
 ```
 

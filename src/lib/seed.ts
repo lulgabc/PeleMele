@@ -158,6 +158,8 @@ export function createSeedState(now = new Date()): AppState {
     clientId: '',
     connectedMemberId: null,
     account: null,
+    accountName: null,
+    accountPicture: null,
     calendars: { [dad.id]: 'primary', [mom.id]: 'primary' },
     busy: [],
     busyMeta: {},

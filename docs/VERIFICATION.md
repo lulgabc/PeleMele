@@ -11,14 +11,14 @@ $ npx tsc --noEmit
 
 $ npm test
 Test Files  8 passed (8)
-     Tests  40 passed (40)
+     Tests  43 passed (43)
   Duration  ~3s
 
 $ npm run build
 ✓ 2459 modules transformed
 dist/index.html                        1.08 kB
-dist/assets/index-*.css               81.74 kB │ gzip: 15.93 kB
-dist/assets/index-*.js               359.12 kB │ gzip: 112.36 kB
+dist/assets/index-*.css               83.90 kB │ gzip: 16.25 kB
+dist/assets/index-*.js               363.70 kB │ gzip: 113.52 kB
 ✓ built
 ```
 
@@ -33,6 +33,7 @@ dist/assets/index-*.js               359.12 kB │ gzip: 112.36 kB
 - 备份导入导出
 - 组件：首屏、导航、快速添加、月视图日抽屉、贴纸选择并持久化
 - 贴纸开关：Playwright 验证关闭后 event stickers 数量为 0，打开后恢复
+- Google Gmail 登录：scope 包含 openid/email/profile + freebusy，userinfo 解析邮箱/姓名/头像
 - Google freeBusy：请求头、时间范围、区间映射、401/无权限错误
 - **同步服务端到端**：创建房间 → 推送修改 revision+1 → 第二台设备拉取并合并
 
@@ -42,7 +43,8 @@ Playwright（系统 Chrome，无头）遍历：
 
 - Web 桌面 1440×900：今天 / 节奏 / 花园 / 合拍 / 设置 / 活动抽屉
 - Web 移动 390×844：同上下 + 青柠 / 可可夜皮肤
-- 输出：`docs/screenshots/`（15 张）
+- 输出：`docs/screenshots/`（16 张）
+- Google 账户卡：`docs/screenshots/google-account.jpg`（本地 UI，使用模拟账户状态验收布局）
 - **Console / page errors：0**
 
 ## PWA
@@ -83,11 +85,15 @@ offline app renders: true
 首次启用时 GitHub Actions 的 `GITHUB_TOKEN` 无法创建 Pages site；已用管理员 token 通过
 `POST /repos/lulgabc/PeleMele/pages {"build_type":"workflow"}` 启用。之后每次推送到 `main` 自动部署。
 
-## Google 日历
+## Gmail 登录 / Google 日历
 
-- 使用 Google Identity Services token model，scope 为 `https://www.googleapis.com/auth/calendar.freebusy`
+- 使用 Google Identity Services token model：`openid email profile https://www.googleapis.com/auth/calendar.freebusy`
+- 登录后 GET `https://www.googleapis.com/oauth2/v3/userinfo`，显示 Google 姓名/邮箱/头像
 - 只 POST `/calendar/v3/freeBusy`，只保存忙碌区间；token 存 `sessionStorage`
-- 无 Client ID 时展示「示例忙碌」并明确标注；无需 Google 也能体验合拍
+- 每位家长选择自己的成员身份，用各自 Gmail 登录；同一设备可切换账户
+- 无 Client ID 时登录按钮禁用并显示配置入口；默认「示例忙碌」仍可体验合拍
+- **未做真实 Gmail 登录实测**：本机没有用户的 OAuth Web Client ID / Google Cloud 项目凭据。
+  配置 GitHub Variable `GOOGLE_CLIENT_ID`（或应用内粘贴）后才能完成线上登录授权。
 - 真实 Google 账号授权需要用户自备 OAuth Client ID（见 README），本机未持有凭据，因此未做线上账号实测
 
 ## 家庭同步服务

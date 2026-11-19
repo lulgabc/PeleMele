@@ -86,6 +86,8 @@ export function coerceState(input: unknown, base = createSeedState()): AppState 
     clientId: str(googleRaw.clientId),
     connectedMemberId: str(googleRaw.connectedMemberId) || null,
     account: str(googleRaw.account) || null,
+    accountName: str(googleRaw.accountName) || null,
+    accountPicture: str(googleRaw.accountPicture) || null,
     calendars: isRecord(googleRaw.calendars)
       ? Object.fromEntries(
           Object.entries(googleRaw.calendars).filter((entry): entry is [string, string] => typeof entry[1] === 'string'),

@@ -4795,6 +4795,164 @@ body::after {
   display: none;
 }
 
+/* Google account login */
+
+.google-login-card {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--ink) 10%, var(--line));
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.google-login-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.google-g {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #dadce0;
+  border-radius: 50%;
+  background: #fff;
+  color: #4285f4;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.google-login-head strong {
+  display: block;
+  font-size: 13px;
+}
+
+.google-login-head span {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.google-login-button {
+  align-self: flex-start;
+}
+
+.google-hint {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.google-hint code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  font-size: 9.5px;
+}
+
+.google-account-card {
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--line));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+}
+
+.google-account-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.google-avatar {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.google-avatar--fallback {
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--primary) 16%, var(--surface));
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.google-account-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.google-account-copy strong {
+  display: block;
+  font-size: 13px;
+}
+
+.google-account-copy span {
+  display: block;
+  overflow: hidden;
+  color: var(--ink-soft);
+  font-size: 10.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.google-account-badge {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  color: color-mix(in srgb, var(--accent) 72%, var(--ink));
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.google-account-meta {
+  margin: 10px 0;
+  color: var(--ink-soft);
+  font-size: 10.5px;
+  line-height: 1.55;
+}
+
+.google-account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.google-account-actions .inline-confirm {
+  flex-basis: 100%;
+}
+
+.google-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 700px) {
+  .google-form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .google-account-actions .button {
+    flex: 1;
+  }
+}
+
 /* -------------------------------------------------------------------------
    Responsive
    ------------------------------------------------------------------------- */

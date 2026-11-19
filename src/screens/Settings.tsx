@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Capacitor } from '@capacitor/core';
 import {
   ArrowLeft,
@@ -8,6 +8,8 @@ import {
   ExternalLink,
   Info,
   Link2,
+  LogIn,
+  LogOut,
   Palette,
   Pencil,
   Plus,
@@ -19,9 +21,13 @@ import {
 } from 'lucide-react';
 import { addDays, startOfDay } from 'date-fns';
 import {
+  DEFAULT_GOOGLE_CLIENT_ID,
+  fetchGoogleAccount,
   fetchGoogleBusy,
   getValidToken,
+  loadGis,
   requestGoogleToken,
+  resolveGoogleClientId,
   revokeGoogleToken,
 } from '../lib/google';
 import { dayKey, formatMonthDay } from '../lib/dates';
@@ -55,6 +61,25 @@ export function SettingsScreen() {
   const [disconnectConfirm, setDisconnectConfirm] = useState(false);
   const [resetConfirm, setResetConfirm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const googleConfigRef = useRef<HTMLDetailsElement>(null);
+
+  useEffect(() => {
+    // Preload before the login click so the OAuth popup keeps the user gesture.
+    void loadGis().catch(() => undefined);
+  }, []);
+
+  const configuredClientId = resolveGoogleClientId(state.google.clientId);
+  const selectedGoogleMember = parentMembers.find((member) => member.id === googleMemberId) ?? parentMembers[0];
+  const connectedGoogleMember = parentMembers.find((member) => member.id === state.google.connectedMemberId);
+  const activeGoogleAccount =
+    state.google.connectedMemberId === googleMemberId && state.google.account
+      ? {
+          email: state.google.account,
+          name: state.google.accountName ?? '',
+          picture: state.google.accountPicture ?? '',
+        }
+      : null;
+  const activeBusyMeta = state.google.busyMeta[googleMemberId];
 
   const customBase = state.customTheme ?? {
     bg: skinById(state.skin).swatches[0]!,
@@ -84,39 +109,55 @@ export function SettingsScreen() {
     toast(`${member.name} 已从家庭中移除`, 'info');
   };
 
-  async function connectGoogle() {
-    if (!state.google.clientId.trim()) {
-      toast('先填写 Google OAuth Client ID', 'error');
+  async function connectGoogle(mode: 'login' | 'refresh' = 'login') {
+    if (!configuredClientId) {
+      googleConfigRef.current?.setAttribute('open', 'true');
+      googleConfigRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast('先配置 Google OAuth Client ID，才能登录 Gmail 账户', 'error');
       return;
     }
     if (!googleMemberId) {
-      toast('先选择要连接哪位家长', 'error');
+      toast('先选择要同步哪位家长', 'error');
       return;
     }
     setSyncing(true);
     try {
-      const token = getValidToken() ?? (await requestGoogleToken(state.google.clientId, true));
+      const token =
+        mode === 'refresh'
+          ? getValidToken() ?? (await requestGoogleToken(configuredClientId))
+          : await requestGoogleToken(configuredClientId, { selectAccount: true });
+      const account = await fetchGoogleAccount(token.accessToken);
       const rangeStart = startOfDay(new Date());
       const rangeEnd = addDays(rangeStart, 21);
+      const resolvedCalendarId = calendarId.trim() || 'primary';
       const blocks = await fetchGoogleBusy(
         token.accessToken,
-        [{ memberId: googleMemberId, calendarId: calendarId.trim() || 'primary' }],
+        [{ memberId: googleMemberId, calendarId: resolvedCalendarId }],
         rangeStart,
         rangeEnd,
       );
-      dispatch({ type: 'settings/google', patch: { calendars: { ...state.google.calendars, [googleMemberId]: calendarId.trim() || 'primary' } } });
+      dispatch({
+        type: 'settings/google',
+        patch: { calendars: { ...state.google.calendars, [googleMemberId]: resolvedCalendarId } },
+      });
       dispatch({
         type: 'google/busy',
         memberId: googleMemberId,
         blocks,
         rangeStart: rangeStart.toISOString(),
         rangeEnd: rangeEnd.toISOString(),
-        account: null,
+        account: account.email,
+        accountName: account.name,
+        accountPicture: account.picture,
       });
       const name = members.find((member) => member.id === googleMemberId)?.name ?? '家人';
-      toast(`已连接 ${name} 的 Google 日历，读到 ${blocks.length} 段忙碌时间`);
+      toast(
+        mode === 'refresh'
+          ? `已刷新 ${name} 的 Google 忙碌时间（${blocks.length} 段）`
+          : `已登录 ${account.email}，并同步 ${name} 的 ${blocks.length} 段忙碌时间`,
+      );
     } catch (error) {
-      toast(error instanceof Error ? error.message : '连接失败，请稍后再试', 'error');
+      toast(error instanceof Error ? error.message : 'Google 登录失败，请稍后再试', 'error');
     } finally {
       setSyncing(false);
     }
@@ -135,6 +176,8 @@ export function SettingsScreen() {
       patch: {
         connectedMemberId: null,
         account: null,
+        accountName: null,
+        accountPicture: null,
         lastSyncAt: null,
         busy,
         busyMeta,
@@ -142,7 +185,7 @@ export function SettingsScreen() {
       },
     });
     setDisconnectConfirm(false);
-    toast('已断开 Google 日历', 'info');
+    toast('已退出 Google 账户', 'info');
   }
 
   function exportData() {
@@ -323,22 +366,12 @@ export function SettingsScreen() {
           <SectionHeader
             icon={<Link2 size={19} strokeWidth={2.2} />}
             title="Google 日历"
-            note="只读取忙碌/空闲，不读取事件内容。"
+            note="家长用自己的 Gmail 登录；只读取忙碌/空闲。"
           />
-          <label className="field">
-            <span className="field-label">OAuth Client ID</span>
-            <input
-              className="input"
-              value={state.google.clientId}
-              onChange={(event) => dispatch({ type: 'settings/google', patch: { clientId: event.target.value } })}
-              placeholder="1234567890-xxxx.apps.googleusercontent.com"
-              spellCheck={false}
-              autoComplete="off"
-            />
-          </label>
+
           <div className="google-form-row">
             <label className="field">
-              <span className="field-label">连接哪位家长</span>
+              <span className="field-label">同步到哪位家长</span>
               <span className="select-wrap">
                 <select
                   className="input"
@@ -347,6 +380,7 @@ export function SettingsScreen() {
                     const id = event.target.value;
                     setGoogleMemberId(id);
                     setCalendarId(state.google.calendars[id] ?? 'primary');
+                    setDisconnectConfirm(false);
                   }}
                 >
                   {parentMembers.map((member) => (
@@ -359,7 +393,7 @@ export function SettingsScreen() {
               </span>
             </label>
             <label className="field">
-              <span className="field-label">日历 ID</span>
+              <span className="field-label">Google 日历 ID</span>
               <input
                 className="input"
                 value={calendarId}
@@ -380,31 +414,122 @@ export function SettingsScreen() {
               />
             </label>
           </div>
-          <div className="google-actions">
-            <button
-              type="button"
-              className="button button--primary button--small"
-              onClick={connectGoogle}
-              disabled={syncing || isNative}
-            >
-              {syncing ? <RefreshCw size={15} className="is-spinning" /> : <Link2 size={15} strokeWidth={2.4} />}
-              {syncing ? '正在同步…' : isNative ? '请在网页版连接' : '连接并同步 21 天'}
-            </button>
-            {state.google.connectedMemberId && (
+
+          {activeGoogleAccount ? (
+            <div className="google-account-card">
+              <div className="google-account-main">
+                {activeGoogleAccount.picture ? (
+                  <img
+                    className="google-avatar"
+                    src={activeGoogleAccount.picture}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <span className="google-avatar google-avatar--fallback" aria-hidden="true">
+                    {(activeGoogleAccount.name || activeGoogleAccount.email).slice(0, 1).toUpperCase()}
+                  </span>
+                )}
+                <div className="google-account-copy">
+                  <strong>{activeGoogleAccount.name || 'Google 账户'}</strong>
+                  <span>{activeGoogleAccount.email}</span>
+                </div>
+                <span className="google-account-badge">已登录</span>
+              </div>
+              <p className="google-account-meta">
+                正在同步 <strong>{selectedGoogleMember?.name ?? '家长'}</strong>的{' '}
+                {calendarId.trim() || 'primary'} 日历
+                {activeBusyMeta?.updatedAt || state.google.lastSyncAt
+                  ? ` · ${new Date(activeBusyMeta?.updatedAt || state.google.lastSyncAt || '').toLocaleString('zh-CN', {
+                      month: 'numeric',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}`
+                  : ''}
+              </p>
+              <div className="google-account-actions">
+                <button
+                  type="button"
+                  className="button button--soft button--small"
+                  onClick={() => connectGoogle('refresh')}
+                  disabled={syncing}
+                >
+                  <RefreshCw size={15} strokeWidth={2.4} className={syncing ? 'is-spinning' : ''} />
+                  {syncing ? '同步中…' : '刷新忙碌时间'}
+                </button>
+                <button
+                  type="button"
+                  className="button button--ghost button--small"
+                  onClick={() => connectGoogle('login')}
+                  disabled={syncing}
+                >
+                  <LogIn size={15} strokeWidth={2.4} /> 切换账户
+                </button>
+                {disconnectConfirm ? (
+                  <span className="inline-confirm">
+                    会清掉这台设备上缓存的忙碌时间。
+                    <button type="button" className="text-button text-button--danger" onClick={disconnectGoogle}>
+                      退出
+                    </button>
+                    <button type="button" className="text-button" onClick={() => setDisconnectConfirm(false)}>
+                      取消
+                    </button>
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    className="text-button text-button--danger"
+                    onClick={() => setDisconnectConfirm(true)}
+                  >
+                    <LogOut size={14} strokeWidth={2.3} /> 退出登录
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="google-login-card">
+              <div className="google-login-head">
+                <span className="google-g" aria-hidden="true">G</span>
+                <div>
+                  <strong>使用 Gmail 账户登录</strong>
+                  <span>
+                    为 {selectedGoogleMember?.name ?? '家长'} 读取 Google 主日历的忙碌/空闲时间。
+                  </span>
+                </div>
+              </div>
               <button
                 type="button"
-                className="button button--ghost button--small"
-                onClick={connectGoogle}
-                disabled={syncing}
+                className="button button--primary google-login-button"
+                onClick={() => connectGoogle('login')}
+                disabled={syncing || isNative}
               >
-                <RefreshCw size={15} strokeWidth={2.4} /> 刷新
+                {syncing ? (
+                  <RefreshCw size={16} className="is-spinning" />
+                ) : (
+                  <LogIn size={16} strokeWidth={2.4} />
+                )}
+                {syncing ? '等待 Google 登录…' : isNative ? '请在网页版登录' : '使用 Google 账户登录'}
               </button>
-            )}
-          </div>
+              {!configuredClientId && (
+                <p className="google-hint">
+                  还需要配置 OAuth Client ID；展开下方「配置 Google 登录」即可填写，或在部署时设置
+                  <code> VITE_GOOGLE_CLIENT_ID</code>。
+                </p>
+              )}
+              {connectedGoogleMember && connectedGoogleMember.id !== googleMemberId && (
+                <p className="google-hint">
+                  这台设备上一次登录的是 {connectedGoogleMember.name}。为{' '}
+                  {selectedGoogleMember?.name ?? '另一位家长'} 登录时会打开账户选择。
+                </p>
+              )}
+            </div>
+          )}
+
           {isNative && (
             <p className="privacy-line">
               <ShieldCheck size={14} strokeWidth={2.2} />
-              原生 App 内暂不弹出 Google 授权；请先在网页/PWA 连接，忙碌区间会通过家庭同步到达这台设备。
+              原生 App 内暂不弹出 Google 登录；请先在网页/PWA 登录，忙碌区间会通过家庭同步到达这台设备。
             </p>
           )}
 
@@ -419,34 +544,35 @@ export function SettingsScreen() {
               </div>
             ))}
           </div>
-          {state.google.connectedMemberId && (
-            <div className="disconnect-row">
-              {disconnectConfirm ? (
-                <span className="inline-confirm">
-                  这会清除已缓存的忙碌时间。
-                  <button type="button" className="text-button text-button--danger" onClick={disconnectGoogle}>
-                    断开
-                  </button>
-                  <button type="button" className="text-button" onClick={() => setDisconnectConfirm(false)}>
-                    取消
-                  </button>
-                </span>
-              ) : (
-                <button type="button" className="text-button text-button--danger" onClick={() => setDisconnectConfirm(true)}>
-                  断开 Google 连接
-                </button>
-              )}
-            </div>
-          )}
 
-          <details className="help-details">
-            <summary>怎么拿到 Client ID？</summary>
+          <details className="help-details" ref={googleConfigRef}>
+            <summary>配置 Google 登录 / OAuth Client ID</summary>
+            <p className="settings-note">
+              Google 登录需要一次性的 OAuth Web Client ID。部署到 GitHub Pages 时，可在仓库
+              Variables 中设置 <code>GOOGLE_CLIENT_ID</code>；也可以直接粘贴到这里。
+            </p>
+            <label className="field">
+              <span className="field-label">OAuth Client ID</span>
+              <input
+                className="input"
+                value={state.google.clientId}
+                onChange={(event) =>
+                  dispatch({ type: 'settings/google', patch: { clientId: event.target.value } })
+                }
+                placeholder="1234567890-xxxx.apps.googleusercontent.com"
+                spellCheck={false}
+                autoComplete="off"
+              />
+            </label>
+            {DEFAULT_GOOGLE_CLIENT_ID && (
+              <p className="google-hint">部署环境已配置 Client ID；这里的值会覆盖环境配置。</p>
+            )}
             <ol>
               <li>在 Google Cloud Console 新建项目，启用 <strong>Google Calendar API</strong>。</li>
-              <li>配置 OAuth 同意屏幕（External），把家人都加到 Test users。</li>
+              <li>配置 OAuth 同意屏幕（External），把家人加入 Test users。</li>
               <li>创建 OAuth Client ID，类型选 <strong>Web application</strong>。</li>
-              <li>Authorized JavaScript origins 填 `http://localhost:5173` 和你的部署域名。</li>
-              <li>把 Client ID 粘贴到上面。应用只申请 `calendar.freebusy` 只读权限。</li>
+              <li>Authorized JavaScript origins 添加 `http://localhost:5173` 和 `https://lulgabc.github.io`。</li>
+              <li>登录后每位家长可以各自选择自己的 Gmail 账户；只申请账户资料和 `calendar.freebusy`。</li>
             </ol>
             <a
               className="text-button"
@@ -459,7 +585,8 @@ export function SettingsScreen() {
           </details>
           <p className="privacy-line">
             <ShieldCheck size={14} strokeWidth={2.2} />
-            access token 只存在本次浏览会话里，不会写进备份或同步数据。
+            账户名称/邮箱/头像仅用于显示登录状态；Google 日历只读忙碌/空闲，不读取事件标题、地点或参与者。
+            access token 只存在本次浏览会话，不会写进备份或同步数据。
           </p>
         </section>
 
@@ -486,7 +613,7 @@ export function SettingsScreen() {
             />
           </div>
           <p className="settings-note">
-            备份是一个 JSON 文件，包含家庭成员和活动，不包含 Google token。可以 AirDrop、微信或邮件发给家人。
+            备份是一个 JSON 文件，包含家庭成员、活动和 Google 账户显示信息，不包含 Google token。可以 AirDrop、微信或邮件发给家人。
           </p>
           <div className="reset-row">
             {resetConfirm ? (

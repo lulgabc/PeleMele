@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { addDays, startOfDay } from 'date-fns';
 import { Check, CloudOff, Link2, RefreshCw, ShieldCheck } from 'lucide-react';
 import {
@@ -18,7 +18,7 @@ import {
   parents,
 } from '../lib/selectors';
 import { findCommonWindows, getDayAvailability, rankWindows, type CommonWindow } from '../lib/availability';
-import { fetchGoogleBusy, getValidToken, requestGoogleToken } from '../lib/google';
+import { fetchGoogleBusy, getValidToken, loadGis, requestGoogleToken, resolveGoogleClientId } from '../lib/google';
 import { useFamily } from '../state/FamilyContext';
 import { useUI } from '../state/UIContext';
 import { Avatar } from '../components/Avatar';
@@ -41,6 +41,10 @@ export function TogetherScreen() {
   const [windowId, setWindowId] = useState<(typeof WINDOWS)[number]['id']>('all');
   const [minDuration, setMinDuration] = useState<(typeof DURATIONS)[number]>(90);
   const [syncing, setSyncing] = useState(false);
+
+  useEffect(() => {
+    void loadGis().catch(() => undefined);
+  }, []);
 
   const validSelected = selectedIds.filter((id) => allMembers.some((member) => member.id === id));
   const selected = validSelected.length > 0 ? validSelected : parentIds;
@@ -81,7 +85,6 @@ export function TogetherScreen() {
   const days = upcomingDays(now, 7);
   const hasDemo = Object.values(sourceByMember).includes('demo');
   const hasGoogle = Object.values(sourceByMember).includes('google');
-  const googleMembers = selected.filter((id) => sourceByMember[id] === 'google');
 
   const toggleMember = (id: string) => {
     setSelectedIds((current) => {
@@ -115,8 +118,9 @@ export function TogetherScreen() {
   };
 
   async function refreshGoogle() {
-    if (!state.google.clientId) {
-      toast('在设置里填入 Google Client ID 后就能同步', 'info');
+    const clientId = resolveGoogleClientId(state.google.clientId);
+    if (!clientId) {
+      toast('在设置里配置 Google OAuth Client ID 后就能登录', 'info');
       openGoogleSettings();
       return;
     }
@@ -125,7 +129,7 @@ export function TogetherScreen() {
     try {
       setSyncing(true);
       let token = getValidToken();
-      if (!token) token = await requestGoogleToken(state.google.clientId, true);
+      if (!token) token = await requestGoogleToken(clientId);
       const calendarId = state.google.calendars[memberId] ?? 'primary';
       const blocks = await fetchGoogleBusy(token.accessToken, [{ memberId, calendarId }], rangeStart, addDays(rangeStart, 21));
       dispatch({
@@ -134,7 +138,9 @@ export function TogetherScreen() {
         blocks,
         rangeStart: rangeStart.toISOString(),
         rangeEnd: addDays(rangeStart, 21).toISOString(),
-        account: null,
+        account: state.google.account,
+        accountName: state.google.accountName,
+        accountPicture: state.google.accountPicture,
       });
       toast(`已同步 ${blocks.length} 段忙碌时间`);
     } catch (error) {
@@ -228,10 +234,10 @@ export function TogetherScreen() {
         <div className="google-bar-copy">
           <strong>
             {hasGoogle
-              ? `已连接 Google 日历 · ${googleMembers.map((id) => allMembers.find((member) => member.id === id)?.name).join('、')}${hasDemo ? ' · 其他成员使用示例' : ''}`
+              ? `已登录 ${state.google.account ?? 'Google 账户'}${hasDemo ? ' · 其他成员使用示例' : ''}`
               : state.google.demoBusy
                 ? '正在使用示例忙碌数据'
-                : '还没有父母的忙碌数据'}
+                : '还没有父母的 Google 忙碌数据'}
           </strong>
           <span>
             {hasGoogle
