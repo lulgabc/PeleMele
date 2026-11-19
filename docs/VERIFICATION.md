@@ -72,10 +72,11 @@ offline app renders: true
 
 - 仓库：<https://github.com/lulgabc/PeleMele>
 - 在线：<https://lulgabc.github.io/PeleMele/>
-- 工作流：`.github/workflows/pages.yml`，运行 [44583188989](https://github.com/lulgabc/PeleMele/actions/runs/44583188989) **成功**
+- 工作流：`.github/workflows/pages.yml`，最新运行 [44587991549](https://github.com/lulgabc/PeleMele/actions/runs/44587991549) **成功**（首次启用运行 44583188989）
 - Pages Source：**GitHub Actions**，`build_type=workflow`
 - 线上实测：`/PeleMele/`、`manifest.webmanifest`、`sw.js`、图标均 HTTP 200
 - 线上 Playwright：标题正确、家庭内容可见、SW scope `/PeleMele/`、离线渲染成功、控制台 0 错误
+- 线上贴纸：`.sticker-tray` 数量 1；点「露营」预填「周末露营」并自动选中 🏕️；控制台 0 错误
 
 首次启用时 GitHub Actions 的 `GITHUB_TOKEN` 无法创建 Pages site；已用管理员 token 通过
 `POST /repos/lulgabc/PeleMele/pages {"build_type":"workflow"}` 启用。之后每次推送到 `main` 自动部署。
