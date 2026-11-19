@@ -2,6 +2,9 @@
 
 > 把一家人的时间，拼成一张温暖的海报。
 
+**在线体验：[https://lulgabc.github.io/PeleMele/](https://lulgabc.github.io/PeleMele/)**  
+[![Deploy to GitHub Pages](https://github.com/lulgabc/PeleMele/actions/workflows/pages.yml/badge.svg)](https://github.com/lulgabc/PeleMele/actions/workflows/pages.yml)
+
 PeleMele（法语 *pêle-mêle*，热热闹闹拼在一起）是一个为 3–5 口之家设计的轻量共享日历。
 Web / iOS / Android 共用一套代码；不做 Google Calendar 式的表格，而是用「海报、纸带、时间缎带」来讲一家人的时间。
 
@@ -17,6 +20,8 @@ Web / iOS / Android 共用一套代码；不做 Google Calendar 式的表格，�
 
 ## 快速开始（Web）
 
+**在线版**：<https://lulgabc.github.io/PeleMele/>（GitHub Pages，推送 `main` 自动部署）
+
 ```bash
 npm install
 npm run dev          # http://localhost:5173
@@ -24,6 +29,15 @@ npm test             # 36 个单元/组件测试
 npm run build        # 产物在 dist/
 npm run preview      # 预览生产构建
 ```
+
+GitHub Pages 的子路径构建：
+
+```bash
+VITE_BASE=/PeleMele/ npm run build
+```
+
+部署由 `.github/workflows/pages.yml` 完成：`npm ci` → `npm test` → 子路径构建 → 上传 Pages artifact。
+仓库 Settings → Pages 的 Source 已设为 **GitHub Actions**；普通推送即可发布。
 
 首次打开会加载「小满一家」的示例日程。点头像进入设置，可以改家庭名称、成员、皮肤，或恢复示例。
 

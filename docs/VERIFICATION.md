@@ -45,6 +45,8 @@ Playwright（系统 Chrome，无头）遍历：
 
 ## PWA
 
+本地生产预览：
+
 ```bash
 $ npm run preview -- --port 4183
 $ BASE_URL=http://localhost:4183 node scripts/check-pwa.mjs
@@ -53,6 +55,28 @@ manifest/sw: {"manifestStatus":200,"appName":"PeleMele — 一家人的时间海
 offline app renders: true
 console errors: none
 ```
+
+子路径构建（模拟 GitHub Pages）：
+
+```bash
+$ VITE_BASE=/PeleMele/ npm run build
+$ VITE_BASE=/PeleMele/ npx vite preview --port 4184
+$ BASE_URL=http://localhost:4184/PeleMele node scripts/check-pwa.mjs
+manifest/sw: {"manifestStatus":200,...,"swScope":"http://localhost:4184/PeleMele/","controlled":true}
+offline app renders: true
+```
+
+## GitHub Pages
+
+- 仓库：<https://github.com/lulgabc/PeleMele>
+- 在线：<https://lulgabc.github.io/PeleMele/>
+- 工作流：`.github/workflows/pages.yml`，运行 [44583188989](https://github.com/lulgabc/PeleMele/actions/runs/44583188989) **成功**
+- Pages Source：**GitHub Actions**，`build_type=workflow`
+- 线上实测：`/PeleMele/`、`manifest.webmanifest`、`sw.js`、图标均 HTTP 200
+- 线上 Playwright：标题正确、家庭内容可见、SW scope `/PeleMele/`、离线渲染成功、控制台 0 错误
+
+首次启用时 GitHub Actions 的 `GITHUB_TOKEN` 无法创建 Pages site；已用管理员 token 通过
+`POST /repos/lulgabc/PeleMele/pages {"build_type":"workflow"}` 启用。之后每次推送到 `main` 自动部署。
 
 ## Google 日历
 
