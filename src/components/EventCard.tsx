@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
-import { Clock3, MapPin } from 'lucide-react';
-import { formatEventWhen, minutesBetween } from '../lib/dates';
+import { Clock3, MapPin, Users } from 'lucide-react';
+import { formatEventWhen } from '../lib/dates';
 import { kindMeta, type FamilyEvent } from '../lib/types';
 import { stickerFor } from '../lib/stickers';
 import { useFamily } from '../state/FamilyContext';
@@ -29,8 +29,10 @@ export function EventCard({
   const participants = state.members.filter(
     (member) => !member.deletedAt && (event.memberIds.length === 0 || event.memberIds.includes(member.id)),
   );
+  const allFamily =
+    event.memberIds.length === 0 ||
+    state.members.filter((member) => !member.deletedAt).every((member) => event.memberIds.includes(member.id));
   const style = { '--kind': kind.color } as CSSProperties;
-  const duration = event.allDay ? null : minutesBetween(event.start, event.end);
   const stickersOn = state.stickerMode;
   const stickerEmoji = stickerFor(event, kind.emoji);
   const stickerSize = variant === 'poster' ? 'lg' : variant === 'mini' ? 'xs' : 'sm';
@@ -46,21 +48,13 @@ export function EventCard({
     >
       <span className="event-card-top">
         <span className="event-kind-chip">
-          {!stickersOn && <span aria-hidden="true">{kind.emoji}</span>}
+          <i style={{ background: kind.color }} aria-hidden="true" />
           {kind.label}
         </span>
-        {stickersOn ? (
+        {stickersOn && (
           <span className="event-sticker">
             <StickerFace emoji={stickerEmoji} kindColor={kind.color} size={stickerSize} tilt={tilt} />
           </span>
-        ) : (
-          variant === 'poster' &&
-          duration !== null &&
-          duration >= 180 && (
-            <span className="event-duration">
-              {duration >= 60 ? `${(duration / 60).toFixed(duration % 60 === 0 ? 0 : 1)} 小时` : `${duration} 分钟`}
-            </span>
-          )
         )}
       </span>
 
@@ -83,7 +77,14 @@ export function EventCard({
 
       {showParticipants && participants.length > 0 && (
         <span className="event-footer">
-          <AvatarStack members={participants} size="xs" max={5} />
+          {allFamily ? (
+            <span className="event-family">
+              <Users size={13} strokeWidth={2.2} aria-hidden="true" />
+              全家
+            </span>
+          ) : (
+            <AvatarStack members={participants} size="xs" max={3} />
+          )}
         </span>
       )}
     </button>

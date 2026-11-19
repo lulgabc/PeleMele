@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarPlus, Sparkles } from 'lucide-react';
+import { ArrowRight, CalendarPlus, Sparkles, Users } from 'lucide-react';
 import { addDays } from 'date-fns';
 import {
   formatCountdown,
@@ -6,13 +6,10 @@ import {
   formatEventWhen,
   formatMonthDay,
   formatTime,
-  formatWeekRange,
   greeting,
   weekdayIndex,
   WEEKDAY_FULL,
-  WEEKDAY_MON,
   weekDays,
-  isToday,
 } from '../lib/dates';
 import type { CommonWindow } from '../lib/availability';
 import { kindMeta } from '../lib/types';
@@ -29,13 +26,12 @@ import { useUI } from '../state/UIContext';
 import { AvatarStack } from '../components/Avatar';
 import { Doodle } from '../components/Brand';
 import { EmptyState, SectionHead } from '../components/Bits';
-import { StickerTray } from '../components/StickerTray';
 import { Timeline } from '../components/Timeline';
 import { stickerFor } from '../lib/stickers';
 
 export function TodayScreen() {
-  const { state, dispatch } = useFamily();
-  const { go, openCreate, openEdit, selectWeekDay } = useUI();
+  const { state } = useFamily();
+  const { go, openCreate, openEdit } = useUI();
   const now = new Date();
   const todayEvents = eventsForDay(state, now);
   const highlight = nextHighlight(state, now);
@@ -45,34 +41,20 @@ export function TodayScreen() {
   const members = activeMembers(state);
   const week = weekDays(now);
   const weekEventCount = week.reduce((sum, day) => sum + eventsForDay(state, day).length, 0);
-  const thisWeekSlots = parentIds.length >= 2 ? bestWindows({ ...state }, parentIds, 12, 7).length : 0;
+  const thisWeekSlots = parentIds.length >= 2 ? bestWindows(state, parentIds, 12, 7).length : 0;
+  const highlightMembers = highlight
+    ? members.filter((member) => highlight.memberIds.length === 0 || highlight.memberIds.includes(member.id))
+    : [];
+  const highlightAllFamily = Boolean(
+    highlight &&
+      (highlight.memberIds.length === 0 ||
+        members.every((member) => highlight.memberIds.includes(member.id))),
+  );
 
   return (
     <div className="page today-page">
-      {!state.onboardingSeen && (
-        <div className="onboarding-strip">
-          <span className="onboarding-emoji" aria-hidden="true">🌈</span>
-          <p>
-            这里是小满一家的示例日程。换成你家的名字和成员，只要一分钟。
-          </p>
-          <div className="onboarding-actions">
-            <button type="button" className="text-button" onClick={() => go('settings')}>
-              去设置
-            </button>
-            <button
-              type="button"
-              className="text-button text-button--quiet"
-              onClick={() => dispatch({ type: 'onboarding/seen' })}
-            >
-              先用示例
-            </button>
-          </div>
-        </div>
-      )}
-
       <section className="hero">
-        <span className="hero-blob hero-blob-a" aria-hidden="true" />
-        <span className="hero-blob hero-blob-b" aria-hidden="true" />
+        <span className="hero-blob" aria-hidden="true" />
         <div className="hero-copy">
           <span className="eyebrow eyebrow--strong">
             {WEEKDAY_FULL[weekdayIndex(now)]} · {formatMonthDay(now)}
@@ -86,7 +68,6 @@ export function TodayScreen() {
             {todayEvents.length > 0
               ? `今天有 ${todayEvents.length} 件小事，慢慢来。`
               : '今天留白，正好去公园走走。'}
-            {sharedWindow ? ' 本周有一段完整的合拍空档。' : ''}
           </p>
           <div className="hero-actions">
             <button type="button" className="button button--primary" onClick={() => openCreate({ date: now })}>
@@ -98,23 +79,21 @@ export function TodayScreen() {
               <ArrowRight size={16} strokeWidth={2.4} />
             </button>
           </div>
-          <div className="hero-stats">
-            <span>
-              <strong>{weekEventCount}</strong> 个本周活动
-            </span>
-            <span>
-              <strong>{thisWeekSlots}</strong> 段合拍空档
-            </span>
-            <span>
-              <strong>{members.length}</strong> 位家人
-            </span>
+          <div className="hero-meta">
+            <span>{weekEventCount} 个本周活动</span>
+            <span className="meta-sep" aria-hidden="true" />
+            <span>{thisWeekSlots} 段合拍空档</span>
+            {state.isSample && (
+              <button type="button" className="hero-sample" onClick={() => go('settings')}>
+                示例家庭 · 换成我家
+              </button>
+            )}
           </div>
         </div>
 
         <div className="hero-art">
           {highlight ? (
             <button type="button" className="highlight-card" onClick={() => openEdit(highlight.id)}>
-              <span className="highlight-pin" aria-hidden="true" />
               <span className="highlight-label">
                 <Sparkles size={14} strokeWidth={2.4} /> 下一件值得期待的事
               </span>
@@ -129,13 +108,14 @@ export function TodayScreen() {
               <span className="highlight-when">{formatEventWhen(highlight, now)}</span>
               <span className="highlight-foot">
                 <span className="highlight-countdown">{formatCountdown(highlight, now)}</span>
-                <AvatarStack
-                  members={members.filter(
-                    (member) =>
-                      highlight.memberIds.length === 0 || highlight.memberIds.includes(member.id),
-                  )}
-                  size="xs"
-                />
+                {highlightAllFamily ? (
+                  <span className="event-family">
+                    <Users size={13} strokeWidth={2.2} aria-hidden="true" />
+                    全家
+                  </span>
+                ) : (
+                  <AvatarStack members={highlightMembers} size="xs" max={3} />
+                )}
               </span>
             </button>
           ) : (
@@ -148,17 +128,13 @@ export function TodayScreen() {
               </button>
             </div>
           )}
-          <Doodle variant="squiggle" className="hero-squiggle" />
         </div>
       </section>
-
-      {state.stickerMode && <StickerTray />}
 
       <div className="today-grid">
         <section className="panel panel--timeline">
           <SectionHead
-            eyebrow="TODAY"
-            title={todayEvents.length > 0 ? `今天的时间线` : '今天，留白'}
+            title={todayEvents.length > 0 ? '今天的时间线' : '今天，留白'}
             action={
               <button type="button" className="icon-button" onClick={() => openCreate({ date: now })} aria-label="添加今天的活动">
                 <CalendarPlus size={19} strokeWidth={2.3} />
@@ -179,45 +155,6 @@ export function TodayScreen() {
 
         <aside className="today-side">
           <SharedWindowCard window={sharedWindow} parents={parentMembers} onOpen={() => go('together')} />
-          <div className="panel week-peek-panel">
-            <SectionHead
-              eyebrow="THIS WEEK"
-              title="这一周"
-              action={
-                <button type="button" className="text-button" onClick={() => go('week')}>
-                  展开 <ArrowRight size={14} strokeWidth={2.4} />
-                </button>
-              }
-            />
-            <div className="week-peek">
-              {week.map((day) => {
-                const dayEvents = eventsForDay(state, day);
-                return (
-                  <button
-                    key={day.toISOString()}
-                    type="button"
-                    className={`peek-day ${isToday(day) ? 'is-today' : ''}`}
-                    onClick={() => {
-                      selectWeekDay(day);
-                      go('week');
-                    }}
-                    aria-label={`${formatMonthDay(day)}，${dayEvents.length} 个活动`}
-                  >
-                    <span className="peek-weekday">{WEEKDAY_MON[weekdayIndex(day)]}</span>
-                    <strong>{day.getDate()}</strong>
-                    <span className="peek-dots" aria-hidden="true">
-                      {dayEvents.slice(0, 3).map((event) => (
-                        <i key={event.id} style={{ background: kindMeta(event.kind).color }} />
-                      ))}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            <p className="week-peek-note">
-              {formatWeekRange(now)} · 共 {weekEventCount} 个活动
-            </p>
-          </div>
         </aside>
       </div>
     </div>
@@ -232,13 +169,9 @@ function SharedWindowCard({
   window: CommonWindow | null;
   parents: ReturnType<typeof activeMembers>;
   onOpen: () => void;
-}) {  return (
+}) {
+  return (
     <section className="panel shared-card">
-      <div className="shared-rings" aria-hidden="true">
-        <span />
-        <span />
-      </div>
-      <span className="eyebrow">TOGETHER</span>
       <h2>合拍时刻</h2>
       {window ? (
         <>
@@ -260,7 +193,7 @@ function SharedWindowCard({
         </>
       ) : (
         <>
-          <p className="shared-empty">还没有找到爸爸妈妈共同的空档。</p>
+          <p className="shared-empty">还没有找到共同的空档。</p>
           <button type="button" className="button button--soft button--small" onClick={onOpen}>
             去合拍看看
           </button>

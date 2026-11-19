@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { Capacitor } from '@capacitor/core';
 import {
   ArrowLeft,
@@ -13,7 +13,6 @@ import {
   Plus,
   RefreshCw,
   ShieldCheck,
-  Sparkles,
   Trash2,
   Upload,
   Users,
@@ -189,51 +188,30 @@ export function SettingsScreen() {
           <h1>把家调成喜欢的样子</h1>
           <p className="page-sub">皮肤、家人、Google 日历，都只属于你们。</p>
         </div>
-        <span className="settings-top-spark" aria-hidden="true">
-          <Sparkles size={24} strokeWidth={2} />
-        </span>
       </div>
 
       <div className="settings-grid">
         <section className="panel settings-card settings-card--appearance" id="appearance">
-          <SectionHeader icon={<Palette size={19} strokeWidth={2.2} />} title="皮肤" note="换一种心情，不用换一个家。" />
-          <div className="skin-grid">
+          <SectionHeader icon={<Palette size={19} strokeWidth={2.2} />} title="皮肤" note="换一种心情。" />
+          <div className="skin-choices" role="group" aria-label="配色皮肤">
             {SKINS.map((skin) => {
               const active = state.skin === skin.id;
               return (
                 <button
                   key={skin.id}
                   type="button"
-                  className={`skin-card ${active ? 'is-active' : ''} ${skin.dark ? 'is-dark' : ''}`}
+                  className={`skin-choice ${active ? 'is-active' : ''}`}
                   onClick={() => dispatch({ type: 'settings/skin', skin: skin.id })}
                   aria-pressed={active}
-                  style={
-                    {
-                      '--preview-bg': skin.vars.bg,
-                      '--preview-surface': skin.vars.surface,
-                      '--preview-ink': skin.vars.ink,
-                      '--preview-primary': skin.vars.primary,
-                      '--preview-accent': skin.vars.accent,
-                    } as CSSProperties
-                  }
                 >
-                  <span className="skin-preview" aria-hidden="true">
-                    <span className="skin-preview-date">21</span>
-                    <span className="skin-preview-line" />
-                    <span className="skin-preview-line skin-preview-line--short" />
-                    <span className="skin-preview-dot" />
+                  <span className="skin-choice-colors" aria-hidden="true">
+                    {skin.swatches.slice(0, 4).map((color) => (
+                      <i key={color} style={{ background: color }} />
+                    ))}
                   </span>
-                  <span className="skin-card-body">
-                    <span className="skin-card-name">
-                      {skin.name}
-                      {active && <Check size={14} strokeWidth={3} />}
-                    </span>
-                    <span className="skin-card-note">{skin.note}</span>
-                    <span className="skin-swatches" aria-hidden="true">
-                      {skin.swatches.slice(0, 4).map((color) => (
-                        <i key={color} style={{ background: color }} />
-                      ))}
-                    </span>
+                  <span className="skin-choice-name">
+                    {skin.name}
+                    {active && <Check size={13} strokeWidth={3} />}
                   </span>
                 </button>
               );
@@ -244,7 +222,7 @@ export function SettingsScreen() {
             <StickerFace emoji="🏕️" kindColor="#2FA8A0" size="sm" tilt={-5} />
             <div className="sticker-mode-copy">
               <strong>贴纸玩心</strong>
-              <span>活动变成模切贴纸，今天页出现「贴纸抽屉」。关掉就回到干净视图。</span>
+              <span>活动使用模切贴纸；表单里可以挑选，关掉就回到纯图标。</span>
             </div>
             <button
               type="button"
@@ -259,56 +237,48 @@ export function SettingsScreen() {
             </button>
           </div>
 
-          <div className={`custom-theme ${state.skin === 'custom' ? 'is-active' : ''}`}>
-            <div className="custom-theme-head">
-              <div>
-                <strong>自己调色</strong>
-                <span>选三个颜色，其余交给 PeleMele。</span>
+          <details className={`custom-theme ${state.skin === 'custom' ? 'is-active' : ''}`}>
+            <summary>
+              <span>自定义配色</span>
+              <small>三种颜色，自动派生整套</small>
+              <ChevronDown size={16} strokeWidth={2.2} className="disclosure-chevron" aria-hidden="true" />
+            </summary>
+            <div className="custom-theme-body">
+              <div className="color-inputs">
+                {(
+                  [
+                    { key: 'bg', label: '底色' },
+                    { key: 'primary', label: '主色' },
+                    { key: 'accent', label: '点缀' },
+                  ] as const
+                ).map((item) => {
+                  const value = customBase[item.key];
+                  return (
+                    <label key={item.key} className="color-input">
+                      <span className="field-label">{item.label}</span>
+                      <span className="color-input-control">
+                        <input
+                          type="color"
+                          value={value}
+                          onChange={(event) =>
+                            dispatch({
+                              type: 'settings/custom-theme',
+                              theme: { ...customBase, [item.key]: event.target.value },
+                            })
+                          }
+                          aria-label={`${item.label}颜色`}
+                        />
+                        <code>{value.toUpperCase()}</code>
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
-              <button
-                type="button"
-                className="button button--ghost button--small"
-                onClick={() => {
-                  dispatch({ type: 'settings/custom-theme', theme: customBase });
-                }}
-              >
-                应用到自定义
-              </button>
+              <p className="custom-theme-hint">
+                当前：{state.skin === 'custom' ? '自定义配色' : skinById(state.skin).name}。改任意颜色会自动切到自定义。
+              </p>
             </div>
-            <div className="color-inputs">
-              {(
-                [
-                  { key: 'bg', label: '底色' },
-                  { key: 'primary', label: '主色' },
-                  { key: 'accent', label: '点缀' },
-                ] as const
-              ).map((item) => {
-                const value = customBase[item.key];
-                return (
-                  <label key={item.key} className="color-input">
-                    <span className="field-label">{item.label}</span>
-                    <span className="color-input-control">
-                      <input
-                        type="color"
-                        value={value}
-                        onChange={(event) =>
-                          dispatch({
-                            type: 'settings/custom-theme',
-                            theme: { ...customBase, [item.key]: event.target.value },
-                          })
-                        }
-                        aria-label={`${item.label}颜色`}
-                      />
-                      <code>{value.toUpperCase()}</code>
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-            <p className="custom-theme-hint">
-              当前使用：{state.skin === 'custom' ? '自定义配色' : skinById(state.skin).name}。改任意颜色会自动切到自定义。
-            </p>
-          </div>
+          </details>
         </section>
 
         <section className="panel settings-card" id="family">

@@ -36,7 +36,7 @@ describe('PeleMele app', () => {
     renderApp();
     await user.click(screen.getAllByRole('button', { name: '花园' })[0]!);
     expect(screen.getByText('MONTH GARDEN')).toBeInTheDocument();
-    expect(screen.getByText('本月高光')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /个活动/ }).length).toBeGreaterThan(0);
   });
 
   it('creates an activity from the quick add button', async () => {
@@ -49,18 +49,16 @@ describe('PeleMele app', () => {
     expect(await screen.findByText(/贴好了/)).toBeInTheDocument();
   });
 
-  it('opens a pre-filled activity from the sticker tray', async () => {
+  it('saves the chosen sticker with a new activity', async () => {
     const user = userEvent.setup();
     renderApp();
-    await user.click(screen.getByRole('button', { name: '贴一张露营贴纸' }));
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByLabelText(/标题/)).toHaveValue('周末露营');
-    expect(screen.getByRole('button', { name: `选择贴纸 🏕️` })).toHaveAttribute('aria-pressed', 'true');
-
+    await user.click(screen.getByRole('button', { name: '添加活动' }));
+    await user.type(screen.getByLabelText(/标题/), '公园放风筝');
+    await user.click(screen.getByRole('button', { name: '选择贴纸 🏕️' }));
     await user.click(screen.getByRole('button', { name: /放进日历/ }));
     await waitFor(() => {
       const saved = JSON.parse(window.localStorage.getItem('pelemele.state.v1') ?? '{}');
-      const created = saved.events?.find((event: { title: string }) => event.title === '周末露营');
+      const created = saved.events?.find((event: { title: string }) => event.title === '公园放风筝');
       expect(created?.sticker).toBe('🏕️');
     });
   });

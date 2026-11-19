@@ -41,7 +41,6 @@ export function DayOrb({
           <i key={kind} style={{ background: kindMeta(kind).color }} />
         ))}
       </span>
-      {variant === 'month' && events.length > 0 && <span className="day-orb-count">{events.length}</span>}
     </button>
   );
 }
@@ -74,7 +73,7 @@ export function WeekWave({
           key={day.toISOString()}
           date={day}
           events={eventsForDay(day)}
-          selected={isToday(day) && isToday(selected) ? true : day.toDateString() === selected.toDateString()}
+          selected={day.toDateString() === selected.toDateString()}
           onClick={() => onSelect(day)}
         />
       ))}

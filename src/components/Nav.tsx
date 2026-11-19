@@ -4,7 +4,6 @@ import { useFamily } from '../state/FamilyContext';
 import { useUI, type View } from '../state/UIContext';
 import { AvatarStack } from './Avatar';
 import { BrandLockup } from './Brand';
-import { formatMonthDay, WEEKDAY_FULL, weekdayIndex } from '../lib/dates';
 
 const NAV: Array<{ id: View; label: string; icon: typeof Sun }> = [
   { id: 'today', label: '今天', icon: Sun },
@@ -17,7 +16,6 @@ export function TopBar() {
   const { state } = useFamily();
   const { go, view } = useUI();
   const members = activeMembers(state);
-  const now = new Date();
 
   return (
     <header className="topbar">
@@ -44,17 +42,7 @@ export function TopBar() {
       </nav>
 
       <div className="top-meta">
-        <span className="date-chip">
-          {formatMonthDay(now)} · {WEEKDAY_FULL[weekdayIndex(now)]}
-        </span>
-        <button
-          type="button"
-          className="avatar-button"
-          onClick={() => go('settings')}
-          aria-label="家庭成员与设置"
-        >
-          <AvatarStack members={members} size="sm" max={4} />
-        </button>
+        <AvatarStack members={members} size="sm" max={4} />
         <button
           type="button"
           className="icon-button settings-button"

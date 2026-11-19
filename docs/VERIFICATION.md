@@ -17,8 +17,8 @@ Test Files  7 passed (7)
 $ npm run build
 ✓ 2459 modules transformed
 dist/index.html                        1.08 kB
-dist/assets/index-*.css               71.10 kB │ gzip: 14.08 kB
-dist/assets/index-*.js               368.39 kB │ gzip: 114.78 kB
+dist/assets/index-*.css               79.11 kB │ gzip: 15.48 kB
+dist/assets/index-*.js               358.27 kB │ gzip: 112.16 kB
 ✓ built
 ```
 
@@ -30,8 +30,8 @@ dist/assets/index-*.js               368.39 kB │ gzip: 114.78 kB
 - 同步合并（每成员 Google busy 取最新）
 - 日期（周一起始、月纸带、全天跨日、off-by-one）
 - 备份导入导出
-- 组件：首屏、导航、快速添加、月视图日抽屉、贴纸抽屉预填并持久化所选贴纸
-- 贴纸开关：Playwright 验证关闭后 tray/event stickers 数量为 0，打开后恢复
+- 组件：首屏、导航、快速添加、月视图日抽屉、贴纸选择并持久化
+- 贴纸开关：Playwright 验证关闭后 event stickers 数量为 0，打开后恢复
 - Google freeBusy：请求头、时间范围、区间映射、401/无权限错误
 - **同步服务端到端**：创建房间 → 推送修改 revision+1 → 第二台设备拉取并合并
 
@@ -41,8 +41,7 @@ Playwright（系统 Chrome，无头）遍历：
 
 - Web 桌面 1440×900：今天 / 节奏 / 花园 / 合拍 / 设置 / 活动抽屉
 - Web 移动 390×844：同上下 + 青柠 / 可可夜皮肤
-- 贴纸：`sticker-tray-desktop.jpg`、`sticker-tray.jpg`、`mobile-stickers.jpg`
-- 输出：`docs/screenshots/`（18 张）
+- 输出：`docs/screenshots/`（15 张）
 - **Console / page errors：0**
 
 ## PWA
@@ -72,11 +71,11 @@ offline app renders: true
 
 - 仓库：<https://github.com/lulgabc/PeleMele>
 - 在线：<https://lulgabc.github.io/PeleMele/>
-- 工作流：`.github/workflows/pages.yml`，最新运行 [44587991549](https://github.com/lulgabc/PeleMele/actions/runs/44587991549) **成功**（首次启用运行 44583188989）
+- 工作流：`.github/workflows/pages.yml`，每次推送到 `main` 自动构建部署；运行记录见 [Actions](https://github.com/lulgabc/PeleMele/actions/workflows/pages.yml)
 - Pages Source：**GitHub Actions**，`build_type=workflow`
 - 线上实测：`/PeleMele/`、`manifest.webmanifest`、`sw.js`、图标均 HTTP 200
 - 线上 Playwright：标题正确、家庭内容可见、SW scope `/PeleMele/`、离线渲染成功、控制台 0 错误
-- 线上贴纸：`.sticker-tray` 数量 1；点「露营」预填「周末露营」并自动选中 🏕️；控制台 0 错误
+- 贴纸：表单里选贴纸后保存到 localStorage；事件卡 `.event-sticker` 正常渲染
 
 首次启用时 GitHub Actions 的 `GITHUB_TOKEN` 无法创建 Pages site；已用管理员 token 通过
 `POST /repos/lulgabc/PeleMele/pages {"build_type":"workflow"}` 启用。之后每次推送到 `main` 自动部署。

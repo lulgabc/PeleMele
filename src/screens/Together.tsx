@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { addDays, startOfDay } from 'date-fns';
-import { Check, CloudOff, Link2, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
+import { Check, CloudOff, Link2, RefreshCw, ShieldCheck } from 'lucide-react';
 import {
   formatDuration,
   formatMonthDay,
@@ -21,9 +21,8 @@ import { findCommonWindows, getDayAvailability, rankWindows, type CommonWindow }
 import { fetchGoogleBusy, getValidToken, requestGoogleToken } from '../lib/google';
 import { useFamily } from '../state/FamilyContext';
 import { useUI } from '../state/UIContext';
-import { Avatar, AvatarStack } from '../components/Avatar';
-import { EmptyState, SectionHead } from '../components/Bits';
-import { Doodle } from '../components/Brand';
+import { Avatar } from '../components/Avatar';
+import { EmptyState } from '../components/Bits';
 
 const WINDOWS = [
   { id: 'all', label: '弹性', start: 8, end: 22 },
@@ -37,8 +36,7 @@ export function TogetherScreen() {
   const { state, dispatch } = useFamily();
   const { openCreate, go, toast } = useUI();
   const allMembers = activeMembers(state);
-  const parentMembers = parents(state);
-  const parentIds = parentMembers.map((member) => member.id);
+  const parentIds = parents(state).map((member) => member.id);
   const [selectedIds, setSelectedIds] = useState<string[]>(parentIds);
   const [windowId, setWindowId] = useState<(typeof WINDOWS)[number]['id']>('all');
   const [minDuration, setMinDuration] = useState<(typeof DURATIONS)[number]>(90);
@@ -152,91 +150,76 @@ export function TogetherScreen() {
         <div>
           <span className="eyebrow">TOGETHER</span>
           <h1>找到合拍的时刻</h1>
-          <p className="page-sub">把两个人（或全家人）的空档叠在一起，剩下的就是可以出发的时间。</p>
+          <p className="page-sub">把空档叠在一起，找出可以一起出发的时间。</p>
         </div>
-        <button type="button" className="button button--primary" onClick={() => go('week')}>
-          <Sparkles size={17} strokeWidth={2.4} /> 看看这一周
-        </button>
       </div>
 
-      <section className="overlap-hero">
-        <div className="overlap-art" aria-hidden="true">
-          <span className="overlap-circle overlap-circle--a" />
-          <span className="overlap-circle overlap-circle--b" />
-          <span className="overlap-heart">♥</span>
+      <section className="panel together-setup">
+        <div className="setup-members">
+          <span className="setup-label">看谁的合拍 · {selectedMembers.length} 位</span>
+          <div className="member-toggle-row" role="group" aria-label="选择要比较的家人">
+            {allMembers.map((member) => {
+              const active = selected.includes(member.id);
+              return (
+                <button
+                  key={member.id}
+                  type="button"
+                  className={`member-chip ${active ? 'is-active' : ''}`}
+                  onClick={() => toggleMember(member.id)}
+                  aria-pressed={active}
+                >
+                  <Avatar member={member} size="xs" />
+                  {member.name}
+                  {active && <Check size={13} strokeWidth={3} />}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div className="overlap-copy">
-          <span className="eyebrow">THE SWEET SPOT</span>
-          <h2>重叠的部分，<br />就是一起出发的时间。</h2>
-          <p>
-            已选择 {selectedMembers.length} 位家人
-            {hasGoogle ? '，含 Google 日历的忙碌时段' : ''}
-            {hasDemo ? '（当前有示例数据）' : ''}。
-          </p>
-          <div className="overlap-members">
-            <AvatarStack members={selectedMembers} size="md" />
-            <div className="member-toggle-row" role="group" aria-label="选择要比较的家人">
-              {allMembers.map((member) => {
-                const active = selected.includes(member.id);
-                return (
-                  <button
-                    key={member.id}
-                    type="button"
-                    className={`member-chip ${active ? 'is-active' : ''}`}
-                    onClick={() => toggleMember(member.id)}
-                    aria-pressed={active}
-                  >
-                    <Avatar member={member} size="xs" />
-                    {member.name}
-                    {active && <Check size={13} strokeWidth={3} />}
-                  </button>
-                );
-              })}
+        <div className="setup-controls">
+          <div className="control-group">
+            <span className="control-label">可安排的时间</span>
+            <div className="segmented" role="group" aria-label="可安排的时间段">
+              {WINDOWS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  className={windowId === preset.id ? 'is-active' : ''}
+                  onClick={() => setWindowId(preset.id)}
+                  aria-pressed={windowId === preset.id}
+                >
+                  {preset.label}
+                  <small>
+                    {preset.id === 'all'
+                      ? '工作日晚上'
+                      : `${String(preset.start).padStart(2, '0')}–${String(preset.end).padStart(2, '0')}`}
+                  </small>
+                </button>
+              ))}
             </div>
           </div>
+          <div className="control-group">
+            <span className="control-label">至少留出</span>
+            <div className="segmented" role="group" aria-label="最短空闲时长">
+              {DURATIONS.map((duration) => (
+                <button
+                  key={duration}
+                  type="button"
+                  className={minDuration === duration ? 'is-active' : ''}
+                  onClick={() => setMinDuration(duration)}
+                  aria-pressed={minDuration === duration}
+                >
+                  {duration} 分钟
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="control-legend">
+            <span><i className="legend-busy" aria-hidden="true" /> 忙碌</span>
+            <span><i className="legend-free" aria-hidden="true" /> 共同空闲</span>
+          </div>
         </div>
-        <Doodle variant="squiggle" className="overlap-squiggle" />
       </section>
-
-      <div className="together-controls panel">
-        <div className="control-group">
-          <span className="control-label">可安排的时间</span>
-          <div className="segmented" role="group" aria-label="可安排的时间段">
-            {WINDOWS.map((preset) => (
-              <button
-                key={preset.id}
-                type="button"
-                className={windowId === preset.id ? 'is-active' : ''}
-                onClick={() => setWindowId(preset.id)}
-                aria-pressed={windowId === preset.id}
-              >
-                {preset.label}
-                <small>{preset.id === 'all' ? '工作日晚上' : `${String(preset.start).padStart(2, '0')}–${String(preset.end).padStart(2, '0')}`}</small>
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="control-group">
-          <span className="control-label">至少留出</span>
-          <div className="segmented" role="group" aria-label="最短空闲时长">
-            {DURATIONS.map((duration) => (
-              <button
-                key={duration}
-                type="button"
-                className={minDuration === duration ? 'is-active' : ''}
-                onClick={() => setMinDuration(duration)}
-                aria-pressed={minDuration === duration}
-              >
-                {duration} 分钟
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="control-legend">
-          <span><i className="legend-busy" aria-hidden="true" /> 忙碌</span>
-          <span><i className="legend-free" aria-hidden="true" /> 共同空闲</span>
-        </div>
-      </div>
 
       <div className={`google-bar ${hasGoogle ? 'has-google' : ''}`}>
         <span className="google-icon" aria-hidden="true">
@@ -284,22 +267,14 @@ export function TogetherScreen() {
         </div>
       </div>
 
-      {hasDemo && (
-        <p className="demo-note">
-          <ShieldCheck size={14} strokeWidth={2.2} />
-          {hasGoogle ? '部分成员的忙碌时段来自示例数据' : '示例数据是本地生成的，不会上传'}；随时可以在设置里关闭。
-        </p>
-      )}
-
       <section className="best-section">
-        <SectionHead eyebrow="BEST PICKS" title="最值得约的时段" />
+        <h2 className="section-title">最值得约的时段</h2>
         {best.length > 0 ? (
           <div className="best-grid">
             {best.map((window, index) => {
               const start = new Date(window.start);
               return (
                 <article key={window.start} className={`best-card ${index === 0 ? 'is-featured' : ''}`}>
-                  <span className="best-rank">{String(index + 1).padStart(2, '0')}</span>
                   <div className="best-date">
                     <span>{WEEKDAY_FULL[weekdayIndex(start)]}</span>
                     <strong>{start.getDate()}</strong>
@@ -309,8 +284,7 @@ export function TogetherScreen() {
                     <span className="best-time">
                       {formatTime(start)} – {formatTime(new Date(window.end))}
                     </span>
-                    <span className="best-duration">{formatDuration(window.durationMin)} 的完整空档</span>
-                    <AvatarStack members={selectedMembers} size="xs" />
+                    <span className="best-duration">{formatDuration(window.durationMin)} 的空档</span>
                   </div>
                   <button type="button" className="button button--primary button--small" onClick={() => createFromWindow(window)}>
                     就这个
@@ -330,7 +304,7 @@ export function TogetherScreen() {
       </section>
 
       <section className="ribbon-section">
-        <SectionHead eyebrow="SEVEN DAYS" title="未来 7 天的空档" />
+        <h2 className="section-title">未来 7 天的空档</h2>
         <div className="ribbon-list">
           {days.map((day) => {
             const availability = getDayAvailability(day, {
@@ -343,9 +317,6 @@ export function TogetherScreen() {
               adaptiveWeekday: windowId === 'all',
             });
             const span = availability.end - availability.start;
-            const dayWindows = windows.filter(
-              (window) => new Date(window.start).toDateString() === day.toDateString(),
-            );
             const freeSegments = availability.free.filter((segment) => (segment.end - segment.start) / 60_000 >= 15);
             const percent = (time: number) => ((time - availability.start) / span) * 100;
             const dayEvents = eventsForDay(state, day);
@@ -403,23 +374,6 @@ export function TogetherScreen() {
                     <span>{formatTime(new Date((availability.start + availability.end) / 2))}</span>
                     <span>{formatTime(new Date(availability.end))}</span>
                   </div>
-                  {dayWindows.length > 0 && (
-                    <div className="ribbon-actions">
-                      {dayWindows.slice(0, 2).map((window) => (
-                        <button
-                          key={window.start}
-                          type="button"
-                          className="slot-chip"
-                          onClick={() => createFromWindow(window)}
-                        >
-                          <span>
-                            {formatTime(new Date(window.start))}–{formatTime(new Date(window.end))}
-                          </span>
-                          {formatDuration(window.durationMin)}
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
             );

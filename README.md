@@ -13,7 +13,7 @@ Web / iOS / Android 共用一套代码；不做 Google Calendar 式的表格，�
 - **花园**：一个月由 4–6 条「周纸带」组成，日期是纸带上的扣子，而不是格子。
 - **合拍**：把父母（或任意成员）的忙碌叠在一起，找出共同空闲，并给出 3 个值得约的时段。
 - **皮肤**：蜜桃汽水 / 青柠野餐 / 泡泡糖 / 海盐日落 / 可可夜，外加三色自定义配色。
-- **贴纸玩心**：每个活动可换一张模切贴纸，今天页有「贴纸抽屉」，点一张就能带着贴纸开新活动；设置里可一键关闭。
+- **贴纸玩心**：每个活动可换一张模切贴纸，表单里可以挑选；设置里可一键关闭，不占独立版块。
 - **Google 日历**：用最小权限 `calendar.freebusy` 只读取忙碌/空闲，不读取标题、地点和参与者。
 - **家庭同步**：可选的零依赖自部署 Node 服务，让多台设备共享同一份日历。
 
@@ -114,7 +114,6 @@ PUT /api/rooms/:room        x-family-key  { baseRevision, state }
 | ![月](docs/screenshots/desktop-month.jpg) | ![设置](docs/screenshots/desktop-settings.jpg) |
 | ![手机今天](docs/screenshots/mobile-today.jpg) | ![手机月](docs/screenshots/mobile-month.jpg) |
 | ![iOS](docs/screenshots/ios-today.jpg) | ![可可夜](docs/screenshots/mobile-today-cocoa.jpg) |
-| ![贴纸抽屉](docs/screenshots/sticker-tray-desktop.jpg) | ![贴纸模式](docs/screenshots/mobile-stickers.jpg) |
 
 完整截图在 `docs/screenshots/`，Web 为 390×844（2x）与 1440×900（2x）；iOS 为 iPhone 17 模拟器。
 
