@@ -17,7 +17,7 @@ Test Files  7 passed (7)
 $ npm run build
 ✓ 2459 modules transformed
 dist/index.html                        1.08 kB
-dist/assets/index-*.css               64.50 kB │ gzip: 12.89 kB
+dist/assets/index-*.css               64.80 kB │ gzip: 12.94 kB
 dist/assets/index-*.js               363.41 kB │ gzip: 113.32 kB
 ✓ built
 ```
