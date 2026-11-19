@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { Capacitor } from '@capacitor/core';
 import {
   ArrowLeft,
   Check,
@@ -42,6 +43,7 @@ export function SettingsScreen() {
   const { go, settingsReturn, toast } = useUI();
   const members = activeMembers(state);
   const parentMembers = parents(state);
+  const isNative = Capacitor.isNativePlatform();
   const [editingMember, setEditingMember] = useState<Member | 'new' | null>(null);
   const [googleMemberId, setGoogleMemberId] = useState(
     state.google.connectedMemberId ?? parentMembers[0]?.id ?? '',
@@ -389,9 +391,14 @@ export function SettingsScreen() {
             </label>
           </div>
           <div className="google-actions">
-            <button type="button" className="button button--primary button--small" onClick={connectGoogle} disabled={syncing}>
+            <button
+              type="button"
+              className="button button--primary button--small"
+              onClick={connectGoogle}
+              disabled={syncing || isNative}
+            >
               {syncing ? <RefreshCw size={15} className="is-spinning" /> : <Link2 size={15} strokeWidth={2.4} />}
-              {syncing ? '正在同步…' : '连接并同步 21 天'}
+              {syncing ? '正在同步…' : isNative ? '请在网页版连接' : '连接并同步 21 天'}
             </button>
             {state.google.connectedMemberId && (
               <button
@@ -404,6 +411,12 @@ export function SettingsScreen() {
               </button>
             )}
           </div>
+          {isNative && (
+            <p className="privacy-line">
+              <ShieldCheck size={14} strokeWidth={2.2} />
+              原生 App 内暂不弹出 Google 授权；请先在网页/PWA 连接，忙碌区间会通过家庭同步到达这台设备。
+            </p>
+          )}
 
           <div className="google-status-list">
             {googleStatus.map(({ member, synced, meta }) => (
