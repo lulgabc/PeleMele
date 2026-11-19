@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
+    <meta name="theme-color" content="#FFF5E9" />
+    <meta name="description" content="PeleMele — 把一家人的时间，拼成一张温暖的海报。共享家庭日历、共同空闲与 Google 日历同步。" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="PeleMele" />
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <title>PeleMele · 一家人的时间海报</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      (function () {
+        var root = document.getElementById('root');
+        var timer = setTimeout(function () {
+          if (root && !root.textContent.trim()) {
+            root.innerHTML =
+              '<div data-boot="1" style="font-family:-apple-system,PingFang SC,sans-serif;color:#7B6B7D;text-align:center;padding:28vh 24px;font-size:14px;line-height:1.7">正在把一家人的日程铺开…<br><span style="font-size:12px;opacity:.7">如果一直空白，请重新打开 PeleMele。</span></div>';
+          }
+        }, 3500);
+        function show(message) {
+          clearTimeout(timer);
+          if (!root) return;
+          if (root.firstElementChild && !root.querySelector('[data-boot]')) return;
+          root.innerHTML =
+            '<div data-boot="1" style="font-family:-apple-system,PingFang SC,sans-serif;color:#7B6B7D;text-align:center;padding:24vh 24px;font-size:13px;line-height:1.7">加载时遇到一点问题。<br><span style="font-size:11px;opacity:.75">' +
+            String(message).replace(/[<>&]/g, '') +
+            '</span><br><span style="font-size:11px;opacity:.55">重新打开应用试试。</span></div>';
+        }
+        window.addEventListener('error', function (event) {
+          if (event && event.target && event.target !== window && event.target.src) {
+            show('资源加载失败：' + event.target.src);
+          } else if (event && event.message) {
+            show(event.message);
+          }
+        }, true);
+        window.addEventListener('unhandledrejection', function (event) {
+          show((event.reason && event.reason.message) || '未处理的错误');
+        });
+      })();
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

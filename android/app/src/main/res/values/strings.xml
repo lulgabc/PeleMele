@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PeleMele</string>
+    <string name="title_activity_main">PeleMele</string>
+    <string name="package_name">com.pelemele.app</string>
+    <string name="custom_url_scheme">com.pelemele.app</string>
+</resources>

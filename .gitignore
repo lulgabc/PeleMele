@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.DS_Store
+*.local
+*.log
+.env
+.env.*
+server/data/
+server/data-test/
+server/*.tmp
+coverage/
+.vite/
+playwright-report/
+test-results/
