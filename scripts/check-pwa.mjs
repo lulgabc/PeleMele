@@ -10,7 +10,7 @@ page.on('console', (message) => {
   if (message.type() === 'error') errors.push(message.text());
 });
 
-const base = process.env.BASE_URL ?? 'http://localhost:4183';
+const base = (process.env.BASE_URL ?? 'http://localhost:4183').replace(/\/+$/, '');
 await page.goto(`${base}/#/today`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(1200);
 
