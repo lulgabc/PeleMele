@@ -1243,6 +1243,12 @@ ol {
   filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.12));
 }
 
+.sticker-face--xxs {
+  --sticker-size: 20px;
+  border-width: 1.5px;
+  font-size: 10px;
+}
+
 .sticker-face--xs {
   --sticker-size: 30px;
   border-width: 2.5px;
@@ -4335,6 +4341,7 @@ body::after {
 }
 
 .month-band::before {
+  top: 33px;
   opacity: 0.5;
 }
 
@@ -4343,11 +4350,28 @@ body::after {
 }
 
 .month-chip {
-  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 22px;
+  padding: 1px 5px 1px 1px;
   border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
   background: color-mix(in srgb, var(--kind) 8%, var(--surface));
   color: var(--ink);
   font-size: 9.5px;
+}
+
+.month-chip .sticker-face {
+  --sticker-size: 20px;
+  border-width: 1.5px;
+  font-size: 10px;
+}
+
+.month-chip-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .month-more {
@@ -4364,6 +4388,134 @@ body::after {
 .day-orb--month {
   width: clamp(38px, 3.4vw, 46px);
   height: clamp(42px, 3.8vw, 50px);
+}
+
+/* Day hierarchy: empty and past days recede, future active days bloom */
+
+.day-orb.is-past:not(.is-selected) {
+  opacity: 0.45;
+  filter: saturate(0.35);
+}
+
+.day-orb.is-empty {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: color-mix(in srgb, var(--ink) 68%, transparent);
+}
+
+.day-orb.is-empty .day-orb-weekday {
+  opacity: 0.45;
+}
+
+.day-orb.is-empty .day-orb-dots {
+  opacity: 0.45;
+}
+
+.day-orb--month.is-empty:not(.is-today) {
+  opacity: 0.62;
+}
+
+.day-orb--month.is-past.is-empty:not(.is-selected) {
+  opacity: 0.3;
+}
+
+.day-orb--week.is-empty:not(.is-selected):not(.is-today) {
+  opacity: 0.72;
+}
+
+.day-orb--week.is-past.is-empty:not(.is-selected) {
+  opacity: 0.36;
+}
+
+.day-orb.is-future-active:not(.is-selected) {
+  background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+  border-color: color-mix(in srgb, var(--primary) 30%, var(--line));
+  color: var(--ink);
+  box-shadow: 0 10px 18px -18px var(--shadow);
+}
+
+.day-orb.is-future-active:not(.is-selected) .day-orb-weekday {
+  color: color-mix(in srgb, var(--ink) 65%, var(--primary));
+}
+
+.day-orb.is-today {
+  opacity: 1;
+  filter: none;
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+}
+
+.day-orb.is-selected {
+  opacity: 1;
+  filter: none;
+  border-color: transparent;
+  background: linear-gradient(150deg, var(--primary), var(--primary-2));
+  color: var(--on-primary);
+  box-shadow: 0 14px 26px -16px color-mix(in srgb, var(--primary) 72%, transparent);
+}
+
+.day-orb.is-selected .day-orb-weekday {
+  opacity: 1;
+  color: color-mix(in srgb, var(--on-primary) 68%, transparent);
+}
+
+.day-orb.is-dim {
+  opacity: 0.2;
+  filter: saturate(0.25);
+}
+
+.stickers-on .day-orb--month .day-orb-dots {
+  display: none;
+}
+
+.month-cell.is-past .month-chip,
+.month-cell.is-past .month-stickers {
+  opacity: 0.42;
+  filter: saturate(0.45);
+}
+
+.month-cell.is-outside .month-chip,
+.month-cell.is-outside .month-stickers {
+  opacity: 0.2;
+}
+
+.month-cell.is-future-active .month-chip,
+.month-cell.is-future-active .month-stickers {
+  opacity: 1;
+  filter: none;
+}
+
+.month-cell.is-outside.is-future-active .month-chip,
+.month-cell.is-outside.is-future-active .month-stickers,
+.month-cell.is-outside .month-chip,
+.month-cell.is-outside .month-stickers {
+  opacity: 0.16;
+  filter: saturate(0.25);
+}
+
+.month-stickers {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  margin-top: 1px;
+}
+
+.month-sticker-button {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+
+.month-sticker-button:hover .sticker-face {
+  transform: rotate(calc(var(--sticker-tilt, 0deg) + 6deg)) translateY(-2px) scale(1.06);
+}
+
+.month-cell-events {
+  min-height: 0;
 }
 
 /* Together: compact setup, simpler proposals, ribbons stay the hero */
@@ -5738,6 +5890,10 @@ body::after {
 
   .month-band {
     padding: 9px 8px 10px;
+  }
+
+  .month-stickers {
+    display: flex;
   }
 
   .month-bands {

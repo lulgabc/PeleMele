@@ -1,12 +1,13 @@
-import { addMonths, isSameWeek } from 'date-fns';
+import { addMonths, isSameWeek, startOfDay } from 'date-fns';
 import type { CSSProperties } from 'react';
 import { CalendarPlus, ChevronLeft, ChevronRight } from 'lucide-react';
-import { formatMonthYear, monthWeeks } from '../lib/dates';
+import { formatMonthYear, isToday, monthWeeks } from '../lib/dates';
 import { eventsForDay, eventsInRange } from '../lib/selectors';
 import { kindMeta } from '../lib/types';
 import { useFamily } from '../state/FamilyContext';
 import { useUI } from '../state/UIContext';
 import { DayOrb } from '../components/DayOrb';
+import { StickerFace } from '../components/StickerFace';
 
 export function MonthScreen() {
   const { state } = useFamily();
@@ -76,8 +77,16 @@ export function MonthScreen() {
                 {week.map((day) => {
                   const dayEvents = eventsForDay(state, day);
                   const outside = day.getMonth() !== monthAnchor.getMonth();
+                  const past = startOfDay(day).getTime() < startOfDay(new Date()).getTime();
+                  const active = dayEvents.length > 0;
+                  const futureActive = !past && active && !isToday(day);
                   return (
-                    <div className={`month-cell ${outside ? 'is-outside' : ''}`} key={day.toISOString()}>
+                    <div
+                      className={`month-cell ${outside ? 'is-outside' : ''} ${past ? 'is-past' : ''} ${
+                        active ? 'has-events' : 'is-empty'
+                      } ${futureActive ? 'is-future-active' : ''}`}
+                      key={day.toISOString()}
+                    >
                       <DayOrb
                         date={day}
                         events={dayEvents}
@@ -85,6 +94,26 @@ export function MonthScreen() {
                         dim={outside}
                         onClick={() => openDay(day)}
                       />
+                      {state.stickerMode && active && (
+                        <span className="month-stickers">
+                          {dayEvents.slice(0, 2).map((event) => (
+                            <button
+                              key={event.id}
+                              type="button"
+                              className="month-sticker-button"
+                              onClick={() => openEdit(event.id)}
+                              aria-label={`编辑 ${event.title}`}
+                            >
+                              <StickerFace
+                                emoji={event.sticker ?? kindMeta(event.kind).emoji}
+                                kindColor={kindMeta(event.kind).color}
+                                size="xxs"
+                                tilt={(event.id.charCodeAt(event.id.length - 1) % 5) - 2}
+                              />
+                            </button>
+                          ))}
+                        </span>
+                      )}
                       <div className="month-cell-events">
                         {dayEvents.slice(0, 2).map((event) => (
                           <button
@@ -95,7 +124,15 @@ export function MonthScreen() {
                             onClick={() => openEdit(event.id)}
                             title={event.title}
                           >
-                            {event.title}
+                            {state.stickerMode && (
+                              <StickerFace
+                                emoji={event.sticker ?? kindMeta(event.kind).emoji}
+                                kindColor={kindMeta(event.kind).color}
+                                size="xxs"
+                                tilt={(event.id.charCodeAt(event.id.length - 1) % 5) - 2}
+                              />
+                            )}
+                            <span className="month-chip-label">{event.title}</span>
                           </button>
                         ))}
                         {dayEvents.length > 2 && (

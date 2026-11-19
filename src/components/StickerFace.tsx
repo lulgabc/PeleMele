@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-export type StickerSize = 'xs' | 'sm' | 'md' | 'lg';
+export type StickerSize = 'xxs' | 'xs' | 'sm' | 'md' | 'lg';
 
 export function StickerFace({
   emoji,

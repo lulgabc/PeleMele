@@ -10,15 +10,15 @@ $ npx tsc --noEmit
 # 无输出（通过）
 
 $ npm test
-Test Files  7 passed (7)
-     Tests  37 passed (37)
+Test Files  8 passed (8)
+     Tests  40 passed (40)
   Duration  ~3s
 
 $ npm run build
 ✓ 2459 modules transformed
 dist/index.html                        1.08 kB
-dist/assets/index-*.css               79.11 kB │ gzip: 15.48 kB
-dist/assets/index-*.js               358.28 kB │ gzip: 112.17 kB
+dist/assets/index-*.css               81.74 kB │ gzip: 15.93 kB
+dist/assets/index-*.js               359.12 kB │ gzip: 112.36 kB
 ✓ built
 ```
 
@@ -29,6 +29,7 @@ dist/assets/index-*.js               358.28 kB │ gzip: 112.17 kB
 - reducer 新增/编辑/软删除/主题
 - 同步合并（每成员 Google busy 取最新）
 - 日期（周一起始、月纸带、全天跨日、off-by-one）
+- 日历日层级：未来有活动日、过去空白日、今天空白的 class 状态
 - 备份导入导出
 - 组件：首屏、导航、快速添加、月视图日抽屉、贴纸选择并持久化
 - 贴纸开关：Playwright 验证关闭后 event stickers 数量为 0，打开后恢复
@@ -71,12 +72,11 @@ offline app renders: true
 
 - 仓库：<https://github.com/lulgabc/PeleMele>
 - 在线：<https://lulgabc.github.io/PeleMele/>
-- 工作流：`.github/workflows/pages.yml`，每次推送到 `main` 自动构建部署；运行记录见 [Actions](https://github.com/lulgabc/PeleMele/actions/workflows/pages.yml)
+- 工作流：`.github/workflows/pages.yml`，每次推送到 `main` 自动构建部署；历史运行见 [Actions](https://github.com/lulgabc/PeleMele/actions/workflows/pages.yml)
 - Pages Source：**GitHub Actions**，`build_type=workflow`
 - 线上实测：`/PeleMele/`、`manifest.webmanifest`、`sw.js`、图标均 HTTP 200
 - 线上 Playwright：标题正确、家庭内容可见、SW scope `/PeleMele/`、离线渲染成功、控制台 0 错误
-- 最新部署运行 [44598557524](https://github.com/lulgabc/PeleMele/actions/runs/44598557524) 成功
-- 线上布局清理校验：onboarding 0、sticker-tray 0、month-highlights 0、month-legend 0；月纸带 6 条；控制台 0 错误
+- 线上布局清理：onboarding 0、sticker-tray 0、month-highlights 0、month-legend 0
 - 贴纸：表单里选贴纸后保存到 localStorage；事件卡 `.event-sticker` 正常渲染
 
 首次启用时 GitHub Actions 的 `GITHUB_TOKEN` 无法创建 Pages site；已用管理员 token 通过

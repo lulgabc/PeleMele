@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { startOfDay } from 'date-fns';
 import { isToday, weekdayIndex, WEEKDAY_MON } from '../lib/dates';
 import type { FamilyEvent } from '../lib/types';
 import { kindMeta } from '../lib/types';
@@ -19,6 +20,9 @@ export function DayOrb({
   onClick: () => void;
 }) {
   const today = isToday(date);
+  const past = startOfDay(date).getTime() < startOfDay(new Date()).getTime();
+  const hasEvents = events.length > 0;
+  const futureActive = !past && !today && hasEvents;
   const kinds = [...new Set(events.map((event) => event.kind))].slice(0, 3);
   const style = { '--lift': `${(weekdayIndex(date) % 3) * 3 - 3}px` } as CSSProperties;
   const label = `${date.getMonth() + 1}月${date.getDate()}日，${events.length} 个活动`;
@@ -28,6 +32,8 @@ export function DayOrb({
       type="button"
       className={`day-orb day-orb--${variant} ${selected ? 'is-selected' : ''} ${today ? 'is-today' : ''} ${
         dim ? 'is-dim' : ''
+      } ${past ? 'is-past' : ''} ${hasEvents ? 'has-events' : 'is-empty'} ${
+        futureActive ? 'is-future-active' : ''
       }`}
       style={style}
       onClick={onClick}
