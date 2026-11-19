@@ -18,7 +18,7 @@ $ npm run build
 ✓ 2459 modules transformed
 dist/index.html                        1.08 kB
 dist/assets/index-*.css               79.11 kB │ gzip: 15.48 kB
-dist/assets/index-*.js               358.27 kB │ gzip: 112.16 kB
+dist/assets/index-*.js               358.28 kB │ gzip: 112.17 kB
 ✓ built
 ```
 
@@ -75,6 +75,8 @@ offline app renders: true
 - Pages Source：**GitHub Actions**，`build_type=workflow`
 - 线上实测：`/PeleMele/`、`manifest.webmanifest`、`sw.js`、图标均 HTTP 200
 - 线上 Playwright：标题正确、家庭内容可见、SW scope `/PeleMele/`、离线渲染成功、控制台 0 错误
+- 最新部署运行 [44598557524](https://github.com/lulgabc/PeleMele/actions/runs/44598557524) 成功
+- 线上布局清理校验：onboarding 0、sticker-tray 0、month-highlights 0、month-legend 0；月纸带 6 条；控制台 0 错误
 - 贴纸：表单里选贴纸后保存到 localStorage；事件卡 `.event-sticker` 正常渲染
 
 首次启用时 GitHub Actions 的 `GITHUB_TOKEN` 无法创建 Pages site；已用管理员 token 通过

@@ -222,7 +222,7 @@ export function SettingsScreen() {
             <StickerFace emoji="🏕️" kindColor="#2FA8A0" size="sm" tilt={-5} />
             <div className="sticker-mode-copy">
               <strong>贴纸玩心</strong>
-              <span>活动使用模切贴纸；表单里可以挑选，关掉就回到纯图标。</span>
+              <span>活动使用模切贴纸；表单里可以挑选。关掉就回到简洁文字卡。</span>
             </div>
             <button
               type="button"
