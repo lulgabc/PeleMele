@@ -73,6 +73,11 @@ function mergeGoogle(local: GoogleConfig, remote: GoogleConfig, preferRemote: bo
 }
 
 export function mergeStates(local: AppState, remote: AppState): AppState {
+  // A device that has never been customised should adopt the family room,
+  // never merge its random demo events into a real family calendar.
+  if (local.isSample) return remote;
+  if (remote.isSample) return local;
+
   const remotePrefsNewer = remote.prefsUpdatedAt > local.prefsUpdatedAt;
   const preferred = remotePrefsNewer ? remote : local;
   return {
@@ -80,6 +85,7 @@ export function mergeStates(local: AppState, remote: AppState): AppState {
     members: mergeById(local.members, remote.members),
     events: mergeById(local.events, remote.events),
     google: mergeGoogle(local.google, remote.google, remotePrefsNewer),
+    isSample: false,
     updatedAt: local.updatedAt > remote.updatedAt ? local.updatedAt : remote.updatedAt,
     prefsUpdatedAt: remotePrefsNewer ? remote.prefsUpdatedAt : local.prefsUpdatedAt,
   };
@@ -96,7 +102,7 @@ export function familyReducer(state: AppState, action: FamilyAction): AppState {
         updatedAt: stamp,
         deletedAt: null,
       };
-      return { ...state, events: upsertById(state.events, event), updatedAt: stamp };
+      return { ...state, events: upsertById(state.events, event), isSample: false, updatedAt: stamp };
     }
     case 'event/delete': {
       const stamp = now();
@@ -105,13 +111,20 @@ export function familyReducer(state: AppState, action: FamilyAction): AppState {
         events: state.events.map((event) =>
           event.id === action.id ? { ...event, deletedAt: stamp, updatedAt: stamp } : event,
         ),
+        isSample: false,
         updatedAt: stamp,
       };
     }
     case 'member/upsert': {
       const stamp = now();
       const member: Member = { ...action.member, updatedAt: stamp, deletedAt: null };
-      return { ...state, members: upsertById(state.members, member), updatedAt: stamp, prefsUpdatedAt: stamp };
+      return {
+        ...state,
+        members: upsertById(state.members, member),
+        isSample: false,
+        updatedAt: stamp,
+        prefsUpdatedAt: stamp,
+      };
     }
     case 'member/delete': {
       const stamp = now();
@@ -120,6 +133,7 @@ export function familyReducer(state: AppState, action: FamilyAction): AppState {
         members: state.members.map((member) =>
           member.id === action.id ? { ...member, deletedAt: stamp, updatedAt: stamp } : member,
         ),
+        isSample: false,
         updatedAt: stamp,
         prefsUpdatedAt: stamp,
       };
@@ -129,7 +143,7 @@ export function familyReducer(state: AppState, action: FamilyAction): AppState {
     case 'settings/custom-theme':
       return prefsTouch(state, { customTheme: action.theme, skin: action.theme ? 'custom' : state.skin });
     case 'settings/family-name':
-      return prefsTouch(state, { familyName: action.name.trim() || state.familyName });
+      return prefsTouch(state, { familyName: action.name.trim() || state.familyName, isSample: false });
     case 'settings/week-start':
       return prefsTouch(state, { weekStartsOn: action.value });
     case 'settings/google':

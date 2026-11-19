@@ -11,14 +11,14 @@ $ npx tsc --noEmit
 
 $ npm test
 Test Files  7 passed (7)
-     Tests  33 passed (33)
+     Tests  36 passed (36)
   Duration  ~3s
 
 $ npm run build
 ✓ 2459 modules transformed
 dist/index.html                        1.08 kB
 dist/assets/index-*.css               64.50 kB │ gzip: 12.89 kB
-dist/assets/index-*.js               362.94 kB │ gzip: 113.16 kB
+dist/assets/index-*.js               363.41 kB │ gzip: 113.32 kB
 ✓ built
 ```
 

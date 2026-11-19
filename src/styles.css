@@ -2596,6 +2596,18 @@ ol {
   grid-column: 1 / -1;
 }
 
+.sync-sample-note {
+  grid-column: 1 / -1;
+  margin: 0 0 12px;
+  padding: 9px 12px;
+  border: 1.5px dashed color-mix(in srgb, var(--primary) 30%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+  color: var(--ink-soft);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
 .secret-wrap {
   position: relative;
   display: block;
@@ -4232,6 +4244,10 @@ ol {
   }
 
   .sync-form .sync-url {
+    grid-column: auto;
+  }
+
+  .sync-sample-note {
     grid-column: auto;
   }
 

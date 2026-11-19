@@ -75,6 +75,8 @@ export interface AppState {
   /** 0 = Sunday, 1 = Monday. PeleMele is designed around Monday-first weeks. */
   weekStartsOn: 0 | 1;
   onboardingSeen: boolean;
+  /** True while the state is the untouched demo family. */
+  isSample: boolean;
   updatedAt: string;
   prefsUpdatedAt: string;
 }

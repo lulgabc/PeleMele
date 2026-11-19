@@ -20,7 +20,7 @@ Web / iOS / Android 共用一套代码；不做 Google Calendar 式的表格，�
 ```bash
 npm install
 npm run dev          # http://localhost:5173
-npm test             # 33 个单元/组件测试
+npm test             # 36 个单元/组件测试
 npm run build        # 产物在 dist/
 npm run preview      # 预览生产构建
 ```
@@ -125,7 +125,7 @@ src/
   components/         UI 组件（布局、卡片、时间线、抽屉…）
   screens/            今天 / 周 / 月 / 合拍 / 设置 / 活动表单
   state/              FamilyContext、UIContext、SyncBridge
-  test/               33 个测试（含同步服务端到端）
+  test/               36 个测试（含同步服务端到端）
 server/               自部署家庭同步服务
 ios/ android/         Capacitor 原生工程
 docs/                 研究、设计规范、验收截图
@@ -143,7 +143,7 @@ docs/                 研究、设计规范、验收截图
 ## 测试与验收
 
 ```bash
-npm test        # 7 个文件，33 个测试通过
+npm test        # 7 个文件，36 个测试通过
 npm run build   # TypeScript 严格检查 + 生产构建通过
 ```
 

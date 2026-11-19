@@ -55,6 +55,7 @@ describe('sync client ↔ room server', () => {
     };
 
     const first = createSeedState(new Date(2026, 10, 19, 9, 0));
+    first.isSample = false;
     const created = await syncNow(config, first);
     expect(created.created).toBe(true);
     expect(created.revision).toBe(1);
@@ -70,6 +71,7 @@ describe('sync client ↔ room server', () => {
     expect(uploaded.revision).toBe(2);
 
     const secondDevice = createSeedState(new Date(2026, 10, 19, 10, 0));
+    secondDevice.isSample = false;
     secondDevice.events = secondDevice.events.filter((event) => event.title !== '电影夜 · 客厅');
     secondDevice.familyName = '小满一家（手机）';
     secondDevice.prefsUpdatedAt = new Date(Date.now() + 5000).toISOString();
@@ -77,5 +79,27 @@ describe('sync client ↔ room server', () => {
     const pulled = await syncNow(config, secondDevice);
     expect(pulled.state.familyName).toBe('小满一家（手机）');
     expect(pulled.state.events.some((event) => event.notes === '带上新买的灯')).toBe(true);
+  }, 20_000);
+
+  it('never merges the random demo events of a new device into a real room', async () => {
+    const config: SyncConfig = {
+      enabled: true,
+      url: `http://127.0.0.1:${PORT}`,
+      room: `adopt-${Date.now().toString(36)}`,
+      key: 'family-secret',
+    };
+
+    const real = createSeedState(new Date(2026, 10, 19, 9, 0));
+    real.isSample = false;
+    real.familyName = '真实一家';
+    const created = await syncNow(config, real);
+    const eventCount = created.state.events.length;
+
+    const freshPhone = createSeedState(new Date(2026, 10, 20, 9, 0));
+    expect(freshPhone.isSample).toBe(true);
+    const adopted = await syncNow(config, freshPhone);
+    expect(adopted.state.familyName).toBe('真实一家');
+    expect(adopted.state.events.length).toBe(eventCount);
+    expect(adopted.state.isSample).toBe(false);
   }, 20_000);
 });

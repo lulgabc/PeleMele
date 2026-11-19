@@ -78,6 +78,11 @@ export function SyncSettings() {
       </div>
 
       <div className="sync-form">
+        {state.isSample && (
+          <p className="sync-sample-note">
+            当前还是「{state.familyName}」示例家庭。可以先在上面的「家庭成员」里改名，或以它作为起点。
+          </p>
+        )}
         <label className="field sync-url">
           <span className="field-label">同步服务地址</span>
           <input

@@ -109,10 +109,17 @@ export function TogetherScreen() {
     });
   };
 
+  const openGoogleSettings = () => {
+    go('settings');
+    window.setTimeout(() => {
+      document.getElementById('google')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 220);
+  };
+
   async function refreshGoogle() {
     if (!state.google.clientId) {
       toast('在设置里填入 Google Client ID 后就能同步', 'info');
-      go('settings');
+      openGoogleSettings();
       return;
     }
     const memberId = state.google.connectedMemberId ?? parentIds[0];
@@ -270,7 +277,7 @@ export function TogetherScreen() {
               {syncing ? '同步中…' : '刷新'}
             </button>
           ) : (
-            <button type="button" className="button button--soft button--small" onClick={() => go('settings')}>
+            <button type="button" className="button button--soft button--small" onClick={openGoogleSettings}>
               <Link2 size={15} strokeWidth={2.4} /> 连接 Google
             </button>
           )}

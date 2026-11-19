@@ -162,6 +162,7 @@ export function createSeedState(now = new Date()): AppState {
     customTheme: null,
     weekStartsOn: 1,
     onboardingSeen: false,
+    isSample: true,
     updatedAt: nowIso,
     prefsUpdatedAt: nowIso,
   };

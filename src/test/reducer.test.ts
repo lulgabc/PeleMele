@@ -50,12 +50,23 @@ describe('family reducer', () => {
     expect(next.skin).toBe('custom');
     expect(next.customTheme).toEqual(custom);
   });
+
+  it('marks the demo family as real as soon as the family is customised', () => {
+    const state = createSeedState(new Date(2026, 10, 19, 9, 0));
+    expect(state.isSample).toBe(true);
+    const renamed = familyReducer(state, { type: 'settings/family-name', name: '我们一家' });
+    expect(renamed.isSample).toBe(false);
+    const skinned = familyReducer(state, { type: 'settings/skin', skin: 'cocoa' });
+    expect(skinned.isSample).toBe(true);
+  });
 });
 
 describe('sync merge', () => {
   it('keeps the newer version of each event and respects tombstones', () => {
     const local = createSeedState(new Date(2026, 10, 19, 9, 0));
     const remote = createSeedState(new Date(2026, 10, 19, 9, 0));
+    local.isSample = false;
+    remote.isSample = false;
     local.events = [makeEvent('shared', '2026-11-19T10:00:00.000Z', '旧')];
     remote.events = [
       makeEvent('shared', '2026-11-19T11:00:00.000Z', '新'),
@@ -69,6 +80,8 @@ describe('sync merge', () => {
   it('merges Google busy data per member by freshest sync', () => {
     const local = createSeedState(new Date(2026, 10, 19, 9, 0));
     const remote = createSeedState(new Date(2026, 10, 19, 9, 0));
+    local.isSample = false;
+    remote.isSample = false;
     local.google.busy = [{ memberId: 'm-mom', start: '2026-11-20T01:00:00Z', end: '2026-11-20T02:00:00Z', source: 'google' }];
     local.google.busyMeta = { 'm-mom': { updatedAt: '2026-11-19T09:00:00Z', rangeStart: '', rangeEnd: '' } };
     remote.google.busy = [
@@ -83,5 +96,16 @@ describe('sync merge', () => {
     expect(merged.google.busy.filter((block) => block.memberId === 'm-mom')).toHaveLength(1);
     expect(merged.google.busy.find((block) => block.memberId === 'm-mom')?.start).toBe('2026-11-21T01:00:00Z');
     expect(merged.google.busy.some((block) => block.memberId === 'm-dad')).toBe(true);
+  });
+
+  it('lets an untouched demo device adopt an existing real room', () => {
+    const demo = createSeedState(new Date(2026, 10, 19, 9, 0));
+    const real = createSeedState(new Date(2026, 10, 19, 9, 0));
+    real.isSample = false;
+    real.familyName = '真实一家';
+    real.events = [makeEvent('real', '2026-11-19T10:00:00.000Z', '真实活动')];
+    expect(mergeStates(demo, real)).toBe(real);
+    expect(mergeStates(real, demo)).toBe(real);
+    expect(mergeStates(demo, demo).isSample).toBe(true);
   });
 });

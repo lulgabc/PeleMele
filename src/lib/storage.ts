@@ -121,6 +121,7 @@ export function coerceState(input: unknown, base = createSeedState()): AppState 
     customTheme: validCustomTheme(input.customTheme),
     weekStartsOn: input.weekStartsOn === 0 ? 0 : 1,
     onboardingSeen: Boolean(input.onboardingSeen),
+    isSample: input.isSample === true,
     updatedAt: str(input.updatedAt, new Date().toISOString()),
     prefsUpdatedAt: str(input.prefsUpdatedAt, str(input.updatedAt, new Date().toISOString())),
   };
