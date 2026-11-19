@@ -245,7 +245,7 @@ function SharedWindowCard({
             {formatTime(new Date(window.start))} – {formatTime(new Date(window.end))}
           </p>
           <p className="shared-duration">
-            爸爸妈妈都有 {formatDuration(window.durationMin)}
+            {parents.map((parent) => parent.name).join(' 和 ')} 都有 {formatDuration(window.durationMin)}
           </p>
           <div className="shared-foot">
             <AvatarStack members={parents} size="sm" />

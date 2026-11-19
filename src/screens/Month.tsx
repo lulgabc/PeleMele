@@ -31,6 +31,11 @@ export function MonthScreen() {
   const birthdayCount = monthEvents.filter((event) => event.kind === 'birthday').length;
   const tripCount = monthEvents.filter((event) => event.kind === 'trip').length;
   const visibleKinds = [...new Set(monthEvents.map((event) => event.kind))];
+  const today = new Date();
+  const addDate =
+    monthAnchor.getFullYear() === today.getFullYear() && monthAnchor.getMonth() === today.getMonth()
+      ? today
+      : new Date(monthAnchor.getFullYear(), monthAnchor.getMonth(), 1);
 
   return (
     <div className="page month-page">
@@ -150,7 +155,7 @@ export function MonthScreen() {
               className="text-button"
               onClick={() =>
                 openCreate({
-                  date: new Date(monthAnchor.getFullYear(), monthAnchor.getMonth(), Math.min(15, new Date().getDate())),
+                  date: addDate,
                   kind: 'outing',
                 })
               }

@@ -84,7 +84,6 @@ export function TogetherScreen() {
   const hasDemo = Object.values(sourceByMember).includes('demo');
   const hasGoogle = Object.values(sourceByMember).includes('google');
   const googleMembers = selected.filter((id) => sourceByMember[id] === 'google');
-  const totalGoogleBlocks = state.google.busy.length;
 
   const toggleMember = (id: string) => {
     setSelectedIds((current) => {
@@ -239,7 +238,7 @@ export function TogetherScreen() {
         <div className="google-bar-copy">
           <strong>
             {hasGoogle
-              ? `已连接 Google 日历 · ${googleMembers.map((id) => allMembers.find((member) => member.id === id)?.name).join('、')}`
+              ? `已连接 Google 日历 · ${googleMembers.map((id) => allMembers.find((member) => member.id === id)?.name).join('、')}${hasDemo ? ' · 其他成员使用示例' : ''}`
               : state.google.demoBusy
                 ? '正在使用示例忙碌数据'
                 : '还没有父母的忙碌数据'}
@@ -278,10 +277,10 @@ export function TogetherScreen() {
         </div>
       </div>
 
-      {totalGoogleBlocks === 0 && hasDemo && (
+      {hasDemo && (
         <p className="demo-note">
           <ShieldCheck size={14} strokeWidth={2.2} />
-          示例数据是本地生成的，不会上传；随时可以在设置里关闭。
+          {hasGoogle ? '部分成员的忙碌时段来自示例数据' : '示例数据是本地生成的，不会上传'}；随时可以在设置里关闭。
         </p>
       )}
 
@@ -315,7 +314,7 @@ export function TogetherScreen() {
           </div>
         ) : (
           <EmptyState
-            title="这一周没有够长的合拍空档"
+            title="未来 7 天没有够长的合拍空档"
             description="把“至少留出”调短一点，或先看看晚上和周末。"
             actionLabel="看看 60 分钟的空档"
             onAction={() => setMinDuration(60)}

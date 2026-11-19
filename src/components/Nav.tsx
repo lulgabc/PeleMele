@@ -69,8 +69,18 @@ export function TopBar() {
 }
 
 export function Dock() {
-  const { view, go, openCreate } = useUI();
+  const { view, go, openCreate, weekDay, monthAnchor } = useUI();
   if (view === 'settings') return null;
+
+  const today = new Date();
+  const addDate =
+    view === 'week'
+      ? weekDay
+      : view === 'month'
+        ? monthAnchor.getFullYear() === today.getFullYear() && monthAnchor.getMonth() === today.getMonth()
+          ? today
+          : new Date(monthAnchor.getFullYear(), monthAnchor.getMonth(), 1)
+        : today;
 
   const renderItem = (item: (typeof NAV)[number]) => {
     const Icon = item.icon;
@@ -98,8 +108,7 @@ export function Dock() {
         type="button"
         className="dock-add"
         onClick={() => {
-          const now = new Date();
-          openCreate({ date: now });
+          openCreate({ date: addDate });
         }}
         aria-label="添加活动"
       >
