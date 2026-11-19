@@ -513,8 +513,9 @@ export function SettingsScreen() {
               </button>
               {!configuredClientId && (
                 <p className="google-hint">
-                  还需要配置 OAuth Client ID；展开下方「配置 Google 登录」即可填写，或在部署时设置
-                  <code> VITE_GOOGLE_CLIENT_ID</code>。
+                  <strong>只差管理员做一次配置。</strong> 普通家人只需要 Gmail，不需要 Google Cloud
+                  账号；由应用管理员在下方「Google 登录配置」粘贴一次 OAuth Client ID，或在部署时设置
+                  <code> VITE_GOOGLE_CLIENT_ID</code> 即可。
                 </p>
               )}
               {connectedGoogleMember && connectedGoogleMember.id !== googleMemberId && (
@@ -546,10 +547,22 @@ export function SettingsScreen() {
           </div>
 
           <details className="help-details" ref={googleConfigRef}>
-            <summary>配置 Google 登录 / OAuth Client ID</summary>
+            <summary>Google 登录配置（管理员一次性设置）</summary>
             <p className="settings-note">
-              Google 登录需要一次性的 OAuth Web Client ID。部署到 GitHub Pages 时，可在仓库
-              Variables 中设置 <code>GOOGLE_CLIENT_ID</code>；也可以直接粘贴到这里。
+              普通家人不需要 Google Cloud，只需要 Gmail。应用管理员注册一次 OAuth Web Client ID
+              即可；这是 Google 要求应用出示的身份，免费且不需要绑定信用卡。
+            </p>
+            <p className="settings-note">
+              部署到 GitHub Pages 时，可在仓库 Variables 中设置 <code>GOOGLE_CLIENT_ID</code>；
+              也可以直接粘贴到这里。完整步骤见
+              <a
+                className="text-button"
+                href="https://github.com/lulgabc/PeleMele/blob/main/docs/GOOGLE_SETUP.md"
+                target="_blank"
+                rel="noreferrer"
+              >
+                5 分钟配置指南 <ExternalLink size={13} strokeWidth={2.3} />
+              </a>
             </p>
             <label className="field">
               <span className="field-label">OAuth Client ID</span>

@@ -73,6 +73,8 @@ npm run cap:android
 
 PeleMele 现在使用 **Gmail 账户登录**：家长用自己的 Google 账号登录，应用显示账户姓名/邮箱/头像，再读取该账号日历的忙碌区间。
 
+> **普通家人不需要 Google Cloud。** 只有应用管理员需要用自己的 Gmail 做一次 OAuth Client ID 注册；详细步骤见 [5 分钟配置指南](docs/GOOGLE_SETUP.md)。
+
 ### 一次性配置（应用所有者）
 
 1. 在 [Google Cloud Console](https://console.cloud.google.com/apis/credentials) 新建项目并启用 **Google Calendar API**。
