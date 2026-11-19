@@ -77,6 +77,7 @@ offline app renders: true
 - 线上实测：`/PeleMele/`、`manifest.webmanifest`、`sw.js`、图标均 HTTP 200
 - 线上 Playwright：标题正确、家庭内容可见、SW scope `/PeleMele/`、离线渲染成功、控制台 0 错误
 - 线上布局清理：onboarding 0、sticker-tray 0、month-highlights 0、month-legend 0
+- 线上日层级：月视图未来活跃 9 / 过去 24 / 空白 32 个格子，任务贴纸 13 个；周视图未来活跃 3 / 过去 3；控制台 0 错误
 - 贴纸：表单里选贴纸后保存到 localStorage；事件卡 `.event-sticker` 正常渲染
 
 首次启用时 GitHub Actions 的 `GITHUB_TOKEN` 无法创建 Pages site；已用管理员 token 通过
